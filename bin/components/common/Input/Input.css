@@ -1,0 +1,16 @@
+.input-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-wrap__icon {
+  position: absolute;
+  left: 13px;
+  color: var(--color-muted);
+  pointer-events: none;
+}
+
+.input-wrap--icon .input {
+  padding-left: 40px;
+}

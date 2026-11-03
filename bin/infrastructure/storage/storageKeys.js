@@ -1,0 +1,15 @@
+export const STORAGE_KEYS = {
+  AUTH_TOKEN: 'webybook:auth-token',
+  AUTH_USER: 'webybook:auth-user',
+  THEME: 'webybook:theme',
+  BOOKS: 'webybook:books',
+  CATEGORIES: 'webybook:categories',
+  AUTHORS: 'webybook:authors',
+  PUBLISHERS: 'webybook:publishers',
+  USERS: 'webybook:users',
+  ORDERS: 'webybook:orders',
+  VOUCHERS: 'webybook:vouchers',
+  REVIEWS: 'webybook:reviews',
+  CONTACTS: 'webybook:contacts',
+  CART: 'webybook:cart',
+};

@@ -1,0 +1,30 @@
+export const ORDER_STATUS = {
+  PENDING: 'PENDING',
+  CONFIRMED: 'CONFIRMED',
+  SHIPPING: 'SHIPPING',
+  DELIVERED: 'DELIVERED',
+  CANCELLED: 'CANCELLED',
+};
+
+export const ORDER_STATUS_LABELS = {
+  [ORDER_STATUS.PENDING]: 'Chờ xác nhận',
+  [ORDER_STATUS.CONFIRMED]: 'Đã xác nhận',
+  [ORDER_STATUS.SHIPPING]: 'Đang giao',
+  [ORDER_STATUS.DELIVERED]: 'Đã giao',
+  [ORDER_STATUS.CANCELLED]: 'Đã hủy',
+};
+
+export const ORDER_STATUS_TONES = {
+  [ORDER_STATUS.PENDING]: 'warning',
+  [ORDER_STATUS.CONFIRMED]: 'info',
+  [ORDER_STATUS.SHIPPING]: 'info',
+  [ORDER_STATUS.DELIVERED]: 'success',
+  [ORDER_STATUS.CANCELLED]: 'danger',
+};
+
+export const ORDER_STATUS_OPTIONS = Object.values(ORDER_STATUS).map((value) => ({
+  value,
+  label: ORDER_STATUS_LABELS[value],
+}));
+
+export const CANCELLABLE_STATUSES = [ORDER_STATUS.PENDING, ORDER_STATUS.CONFIRMED];

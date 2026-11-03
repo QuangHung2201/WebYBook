@@ -1,0 +1,24 @@
+.badge--success {
+  background: var(--color-success-soft);
+  color: var(--color-success);
+}
+.badge--warning {
+  background: var(--color-warning-soft);
+  color: var(--color-warning);
+}
+.badge--danger {
+  background: var(--color-danger-soft);
+  color: var(--color-danger);
+}
+.badge--info {
+  background: var(--color-info-soft);
+  color: var(--color-info);
+}
+.badge--neutral {
+  background: var(--color-surface-alt);
+  color: var(--color-muted);
+}
+.badge--primary {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}

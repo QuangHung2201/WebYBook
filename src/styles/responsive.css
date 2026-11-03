@@ -1,0 +1,45 @@
+@media (max-width: 1024px) {
+  :root {
+    --text-4xl: 2.5rem;
+    --text-3xl: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  :root {
+    --text-4xl: 2.1rem;
+    --text-3xl: 1.75rem;
+    --text-2xl: 1.45rem;
+  }
+
+  .container {
+    padding-inline: 16px;
+  }
+
+  .page {
+    padding-block: 28px 56px;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  .page-head {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 520px) {
+  .form-actions {
+    flex-direction: column-reverse;
+  }
+
+  .form-actions > * {
+    width: 100%;
+  }
+}
