@@ -13,18 +13,19 @@ export default function LoginForm({ submitting, onSubmit }) {
     formState: { errors },
   } = useForm({
     resolver: zodResolver(loginSchema),
-    defaultValues: { identifier: '', password: '', remember: true },
+    defaultValues: { email: '', password: '', remember: true },
   });
 
   return (
     <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
       <Input
-        label="Email hoặc tên đăng nhập"
+        label="Email"
         placeholder="you@example.com"
         icon={Mail}
-        autoComplete="username"
-        error={errors.identifier?.message}
-        {...register('identifier')}
+        type="email"
+        autoComplete="email"
+        error={errors.email?.message}
+        {...register('email')}
       />
       <Input
         label="Mật khẩu"

@@ -14,12 +14,10 @@ export default function RegisterForm({ submitting, onSubmit }) {
     resolver: zodResolver(registerSchema),
     defaultValues: {
       fullName: '',
-      username: '',
       email: '',
       phone: '',
       password: '',
       confirmPassword: '',
-      agree: false,
     },
   });
 
@@ -31,14 +29,6 @@ export default function RegisterForm({ submitting, onSubmit }) {
         icon={User}
         error={errors.fullName?.message}
         {...register('fullName')}
-      />
-      <Input
-        label="Tên đăng nhập"
-        placeholder="nguyenvanan"
-        icon={User}
-        autoComplete="username"
-        error={errors.username?.message}
-        {...register('username')}
       />
       <div className="form-row">
         <Input
@@ -76,17 +66,6 @@ export default function RegisterForm({ submitting, onSubmit }) {
           error={errors.confirmPassword?.message}
           {...register('confirmPassword')}
         />
-      </div>
-
-      <div>
-        <label className="checkbox-row">
-          <input type="checkbox" {...register('agree')} />
-          <span>
-            Tôi đồng ý với <a href="#terms">điều khoản sử dụng</a> và{' '}
-            <a href="#privacy">chính sách bảo mật</a>.
-          </span>
-        </label>
-        {errors.agree ? <span className="error">{errors.agree.message}</span> : null}
       </div>
 
       <Button type="submit" size="lg" fullWidth loading={submitting}>

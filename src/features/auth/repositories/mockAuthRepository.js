@@ -9,21 +9,19 @@ const stripPassword = (user) => {
   return safe;
 };
 
-const findByIdentifier = (users, identifier) => {
-  const keyword = String(identifier || '').trim().toLowerCase();
-  return users.find(
-    (user) => user.email.toLowerCase() === keyword || user.username.toLowerCase() === keyword,
-  );
+const findByEmail = (users, email) => {
+  const keyword = String(email || '').trim().toLowerCase();
+  return users.find((user) => user.email.toLowerCase() === keyword);
 };
 
 export const mockAuthRepository = {
-  async login({ identifier, password }) {
+  async login({ email, password }) {
     await delay(420);
     const users = readCollection(STORAGE_KEYS.USERS, usersMock);
-    const user = findByIdentifier(users, identifier);
+    const user = findByEmail(users, email);
 
     if (!user || user.password !== password) {
-      throw new Error('Email/tên đăng nhập hoặc mật khẩu không đúng.');
+      throw new Error('Email hoặc mật khẩu không đúng.');
     }
     if (user.status === USER_STATUS.LOCKED) {
       throw new Error('Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.');
@@ -35,21 +33,16 @@ export const mockAuthRepository = {
     };
   },
 
-  async register({ username, email, password, fullName, phone }) {
+  async register({ email, password, fullName, phone }) {
     await delay(500);
     const users = readCollection(STORAGE_KEYS.USERS, usersMock);
 
     const duplicatedEmail = users.some((user) => user.email.toLowerCase() === email.toLowerCase());
     if (duplicatedEmail) throw new Error('Email này đã được sử dụng.');
 
-    const duplicatedUsername = users.some(
-      (user) => user.username.toLowerCase() === username.toLowerCase(),
-    );
-    if (duplicatedUsername) throw new Error('Tên đăng nhập này đã tồn tại.');
-
     const user = {
       id: nextId(users),
-      username,
+      username: email.split('@')[0],
       email,
       password,
       fullName,
