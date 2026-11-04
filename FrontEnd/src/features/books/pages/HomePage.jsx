@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, BookOpen, RefreshCw, ShieldCheck, Sparkles, Truck } from 'lucide-react';
 import Button from '@/components/common/Button/Button';
@@ -10,6 +11,10 @@ import { useCart } from '@/features/cart/hooks/useCart';
 import BookGrid from '../components/BookGrid';
 import './Books.css';
 
+// Tách three.js/@react-three ra khỏi bundle chính để danh sách sách bên dưới
+// vẫn render ngay, không phải chờ thư viện 3D tải xong.
+const Hero3D = lazy(() => import('@/components/shared/Hero3D/Hero3D'));
+
 export default function HomePage() {
   const { addToCart } = useCart();
   const { categories } = useCategories();
@@ -20,6 +25,10 @@ export default function HomePage() {
 
   return (
     <div className="home">
+      <Suspense fallback={<div className="hero3d-skeleton" aria-hidden="true" />}>
+        <Hero3D />
+      </Suspense>
+
       <section className="hero">
         <div className="container hero__inner">
           <div className="hero__content">
