@@ -1,0 +1,272 @@
+{
+  "info": {
+    "name": "WebYBook - User Authentication API",
+    "description": "Bộ request Postman cho module đăng ký, đăng nhập, quên mật khẩu và thông tin tài khoản của WebYBook.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Đăng ký",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"user@gmail.com\",\n  \"phone\": \"0912345678\",\n  \"password\": \"secret123\",\n  \"confirmPassword\": \"secret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "description": "Đăng ký tài khoản mới. Server luôn gán role CUSTOMER và status ACTIVE."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201 Created', function () {",
+              "  pm.response.to.have.status(201);",
+              "});",
+              "pm.test('Không trả mật khẩu', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.data).to.not.have.property('password');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Đăng nhập",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@gmail.com\",\n  \"password\": \"secret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "description": "Đăng nhập và tự động lưu JWT vào biến collection token."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "const body = pm.response.json();",
+              "if (body.success && body.data && body.data.token) {",
+              "  pm.collectionVariables.set('token', body.data.token);",
+              "  pm.test('Đã lưu JWT', function () {",
+              "    pm.expect(body.data.token).to.be.a('string').and.not.empty;",
+              "  });",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Thông tin tài khoản",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{token}}"
+          }
+        ],
+        "url": "{{baseUrl}}/api/v1/auth/me",
+        "description": "Yêu cầu JWT hợp lệ. Chạy request Đăng nhập trước để lưu token."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});",
+              "pm.test('Đúng tài khoản', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.data.email).to.eql('user@gmail.com');",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Quên mật khẩu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@gmail.com\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/forgot-password",
+        "description": "Luôn trả cùng một thông báo. Lấy token từ email hoặc log ứng dụng (MAIL_ENABLED=false) rồi gán vào biến resetToken."
+      }
+    },
+    {
+      "name": "5. Đặt lại mật khẩu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"newSecret123\",\n  \"confirmPassword\": \"newSecret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/reset-password",
+        "description": "Token chỉ dùng được một lần và có thời hạn 15 phút (mặc định)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200 OK', function () {",
+              "  pm.response.to.have.status(200);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "6. Đăng ký - Email đã tồn tại",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"fullName\": \"Nguyen Van B\",\n  \"email\": \"user@gmail.com\",\n  \"phone\": \"0987654321\",\n  \"password\": \"secret123\",\n  \"confirmPassword\": \"secret123\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/register",
+        "description": "Kiểm tra lỗi trùng email (HTTP 409)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 409 Conflict', function () {",
+              "  pm.response.to.have.status(409);",
+              "});"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "7. Đăng nhập - Sai mật khẩu",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"user@gmail.com\",\n  \"password\": \"wrong-password\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "description": "Kiểm tra thông báo lỗi chung cho email không tồn tại hoặc sai mật khẩu (HTTP 401)."
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 401 Unauthorized', function () {",
+              "  pm.response.to.have.status(401);",
+              "});",
+              "pm.test('Thông báo không tiết lộ tài khoản', function () {",
+              "  const body = pm.response.json();",
+              "  pm.expect(body.message).to.eql('Email hoặc mật khẩu không chính xác');",
+              "});"
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "resetToken",
+      "value": ""
+    }
+  ]
+}

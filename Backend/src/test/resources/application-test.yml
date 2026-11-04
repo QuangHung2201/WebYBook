@@ -1,0 +1,42 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:webybook_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    open-in-view: false
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  mail:
+    host: localhost
+    port: 2525
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+app:
+  jwt:
+    secret: test-only-jwt-secret-key-with-at-least-32-bytes
+    expiration-ms: 3600000
+    issuer: webybook-test
+  password-reset:
+    token-ttl-minutes: 15
+    reset-url: http://localhost:5173/reset-password
+  mail:
+    enabled: false
+    from: no-reply@webybook.test
+  cors:
+    allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    org.hibernate.SQL: WARN
+    org.springframework.security: WARN

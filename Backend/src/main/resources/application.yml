@@ -1,0 +1,66 @@
+server:
+  port: ${SERVER_PORT:8080}
+
+spring:
+  application:
+    name: webybook-user
+
+  # Optional local .env file for development. Real environment variables still
+  # take precedence. Do not commit .env to version control.
+  config:
+    import: optional:file:.env[.properties]
+
+  datasource:
+    url: ${DB_URL:jdbc:mysql://localhost:3306/webybook?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Ho_Chi_Minh&useSSL=false&allowPublicKeyRetrieval=true}
+    username: ${DB_USERNAME:root}
+    password: ${DB_PASSWORD:}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: ${JPA_DDL_AUTO:update}
+    open-in-view: false
+    show-sql: ${JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        format_sql: false
+
+  mail:
+    host: ${SMTP_HOST:localhost}
+    port: ${SMTP_PORT:587}
+    username: ${SMTP_USERNAME:}
+    password: ${SMTP_PASSWORD:}
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: ${SMTP_AUTH:true}
+          starttls:
+            enable: ${SMTP_STARTTLS:true}
+          connectiontimeout: 5000
+          timeout: 5000
+          writetimeout: 5000
+
+app:
+  jwt:
+    # Required. Must be at least 32 bytes (256 bits) for HS256.
+    secret: ${JWT_SECRET}
+    expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+    issuer: ${JWT_ISSUER:webybook}
+
+  password-reset:
+    token-ttl-minutes: ${PASSWORD_RESET_TOKEN_TTL_MINUTES:15}
+    reset-url: ${PASSWORD_RESET_URL:http://localhost:5173/reset-password}
+
+  mail:
+    # false: write the reset link to the application log instead of sending SMTP mail.
+    enabled: ${MAIL_ENABLED:false}
+    from: ${MAIL_FROM:no-reply@webybook.vn}
+
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:3000,http://localhost:5173}
+
+logging:
+  level:
+    com.webybook: ${APP_LOG_LEVEL:INFO}
+    org.springframework.security: ${SECURITY_LOG_LEVEL:INFO}
