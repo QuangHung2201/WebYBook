@@ -656,9 +656,39 @@ Chi tiết xem tại [`TEST_RESULTS.md`](TEST_RESULTS.md).
 
 ---
 
-## 13. Ghi chú phạm vi
+## 13. API quản trị
 
-- Chỉ xây dựng module User Authentication.
-- Chưa bao gồm refresh token, đổi mật khẩu khi đã đăng nhập, phân quyền ADMIN, quản lý người dùng, hoặc các module sách/đơn hàng.
-- JWT access token mặc định có thời hạn 24 giờ. Có thể giảm bằng `JWT_EXPIRATION_MS`.
-- CORS mặc định cho phép các origin phát triển local; cấu hình lại bằng `CORS_ALLOWED_ORIGINS` khi triển khai.
+Các endpoint dưới đây yêu cầu JWT của tài khoản có role `ADMIN`. Tài khoản
+`CUSTOMER` sẽ nhận `403`.
+
+| Nhóm | Endpoint chính |
+|---|---|
+| Dashboard | `GET /api/v1/admin/dashboard`, `/orders-by-status`, `/top-selling-books`, `/low-stock`, `/revenue/daily`, `/revenue/weekly` |
+| Sách | `GET/POST /api/v1/admin/books`, `GET/PUT/DELETE /api/v1/admin/books/{id}` |
+| Danh mục | `GET/POST/PUT/DELETE /api/v1/admin/categories[/{id}]` |
+| Tác giả | `GET/POST/PUT/DELETE /api/v1/admin/authors[/{id}]` |
+| Nhà xuất bản | `GET/POST/PUT/DELETE /api/v1/admin/publishers[/{id}]` |
+| Người dùng | `GET /api/v1/admin/users`, `GET /{id}`, `PUT /{id}` |
+| Đơn hàng | `GET /api/v1/admin/orders`, `GET /{id}`, `PUT /{id}/status`, `GET /{id}/history` |
+| Voucher | `GET/POST /api/v1/admin/vouchers`, `PUT/DELETE /{id}` |
+| Đánh giá | `GET /api/v1/admin/reviews`, `GET /{id}`, `PUT /{id}/status`, `DELETE /{id}` |
+| Phương thức giao hàng | `GET/POST /api/v1/admin/shipping-methods`, `GET/PUT/DELETE /{id}` |
+
+API sách hỗ trợ `search`, `categoryId`, `page`, `limit`. Xóa sách là
+soft-delete bằng cách chuyển `status` sang `deleted`. Chuyển trạng thái đơn
+hàng được giới hạn theo luồng hợp lệ và ghi vào `order_status_history`.
+Dashboard và báo cáo truy vấn trực tiếp dữ liệu MySQL, không dùng mock. Doanh thu
+không tính đơn hàng `cancelled`/`canceled`. Hai API doanh thu hỗ trợ tùy chọn
+`from` và `to` theo định dạng `YYYY-MM-DD`; API theo tuần trả về ngày thứ Hai
+(`week_start`) của từng tuần.
+
+Admin có thể kiểm duyệt đánh giá bằng trạng thái `approved` hoặc `rejected`.
+Xóa phương thức giao hàng được triển khai dưới dạng vô hiệu hóa (`inactive`) để
+không phá vỡ các đơn hàng đã tham chiếu phương thức đó.
+
+Role được khởi tạo tự động khi Backend khởi động: `CUSTOMER` và `ADMIN`.
+Không có endpoint public nào cho phép người dùng tự đổi role.
+
+JWT access token mặc định có thời hạn 24 giờ. Có thể giảm bằng
+`JWT_EXPIRATION_MS`. CORS mặc định cho phép các origin phát triển local;
+cấu hình lại bằng `CORS_ALLOWED_ORIGINS` khi triển khai.

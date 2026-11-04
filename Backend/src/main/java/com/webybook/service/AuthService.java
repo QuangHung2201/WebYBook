@@ -5,6 +5,7 @@ import com.webybook.dto.request.RegisterRequest;
 import com.webybook.dto.response.AuthResponse;
 import com.webybook.dto.response.UserResponse;
 import com.webybook.entity.User;
+import com.webybook.entity.Role;
 import com.webybook.enums.UserRole;
 import com.webybook.enums.UserStatus;
 import com.webybook.exception.AccountInactiveException;
@@ -12,9 +13,11 @@ import com.webybook.exception.BadRequestException;
 import com.webybook.exception.DuplicateResourceException;
 import com.webybook.exception.InvalidCredentialsException;
 import com.webybook.repository.UserRepository;
+import com.webybook.repository.RoleRepository;
 import com.webybook.security.JwtService;
 import com.webybook.util.ContactNormalizer;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -24,9 +27,25 @@ import org.springframework.transaction.annotation.Transactional;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final UserService userService;
+
+    @Autowired
+    public AuthService(
+            UserRepository userRepository,
+            RoleRepository roleRepository,
+            PasswordEncoder passwordEncoder,
+            JwtService jwtService,
+            UserService userService
+    ) {
+        this.userRepository = userRepository;
+        this.roleRepository = roleRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtService = jwtService;
+        this.userService = userService;
+    }
 
     public AuthService(
             UserRepository userRepository,
@@ -34,10 +53,7 @@ public class AuthService {
             JwtService jwtService,
             UserService userService
     ) {
-        this.userRepository = userRepository;
-        this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
-        this.userService = userService;
+        this(userRepository, null, passwordEncoder, jwtService, userService);
     }
 
     @Transactional
@@ -73,7 +89,13 @@ public class AuthService {
         user.setPhone(phone);
         user.setPassword(passwordEncoder.encode(password));
         // Role and status are assigned by the server, never by the client.
-        user.setRole(UserRole.CUSTOMER);
+        if (roleRepository == null) {
+            user.setRole(UserRole.CUSTOMER);
+        } else {
+            Role customerRole = roleRepository.findByName(UserRole.CUSTOMER.name())
+                    .orElseThrow(() -> new IllegalStateException("Chưa có role CUSTOMER trong bảng roles"));
+            user.setRoleEntity(customerRole);
+        }
         user.setStatus(UserStatus.ACTIVE);
 
         try {

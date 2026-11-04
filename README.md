@@ -7,6 +7,9 @@
 
 ## Yêu cầu
 
+Danh sách đầy đủ môi trường và thư viện xem tại
+[REQUIREMENTS.md](REQUIREMENTS.md).
+
 - Node.js 18+ và npm
 - JDK 17+
 - MySQL 8+ hoặc MariaDB
