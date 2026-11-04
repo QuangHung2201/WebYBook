@@ -1,6 +1,6 @@
-import { Component, Suspense } from 'react';
+import { Component, Suspense, useCallback, useEffect, useState } from 'react';
 import { Canvas } from '@react-three/fiber';
-import { OrbitControls, useGLTF, useProgress } from '@react-three/drei';
+import { OrbitControls, useGLTF } from '@react-three/drei';
 import './Hero3D.css';
 
 const MODEL_URL = '/book_stack.glb';
@@ -12,11 +12,15 @@ useGLTF.preload(MODEL_URL);
  * `useGLTF` sẽ "suspend" cho tới khi file tải xong, nhờ vậy phần còn lại
  * của trang chủ vẫn render bình thường.
  */
-function HeroModel() {
+function HeroModel({ onReady }) {
   const { scene } = useGLTF(MODEL_URL);
 
+  useEffect(() => {
+    onReady?.();
+  }, [onReady]);
+
   return (
-    <group position={[0, -0.35, 0]} scale={2}>
+    <group position={[0, 0.42, 0]} scale={1.4}>
       <primitive object={scene} />
     </group>
   );
@@ -54,6 +58,7 @@ class ModelErrorBoundary extends Component {
 
   componentDidCatch(error) {
     console.warn('[Hero3D] Không thể tải mô hình 3D:', error);
+    this.props.onReady?.();
   }
 
   render() {
@@ -61,11 +66,11 @@ class ModelErrorBoundary extends Component {
   }
 }
 
-function HeroScene() {
+function HeroScene({ onReady }) {
   return (
     <>
       {/* Ánh sáng nền + đèn điểm nhấn chiếu vào giữa mô hình để tạo chiều sâu. */}
-      <ambientLight intensity={0.55} />
+      <ambientLight intensity={0.75} />
       <spotLight
         position={[6, 8, 6]}
         angle={0.45}
@@ -85,14 +90,14 @@ function HeroScene() {
       />
 
       <Suspense fallback={null}>
-        <ModelErrorBoundary fallback={<PlaceholderModel />}>
-          <HeroModel />
+        <ModelErrorBoundary fallback={<PlaceholderModel />} onReady={onReady}>
+          <HeroModel onReady={onReady} />
         </ModelErrorBoundary>
       </Suspense>
 
       {/* Bệ đỡ mờ giúp mô hình "đứng" trên nền thay vì lơ lửng. */}
-      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.37, 0]} receiveShadow>
-        <circleGeometry args={[3.4, 64]} />
+      <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.45, 0]} receiveShadow>
+        <circleGeometry args={[2.8, 64]} />
         <shadowMaterial transparent opacity={0.16} />
       </mesh>
 
@@ -112,11 +117,9 @@ function HeroScene() {
   );
 }
 
-function LoadingBadge() {
-  const { active } = useProgress();
-
+function LoadingBadge({ visible }) {
   return (
-    <div className={`hero3d__loading${active ? ' is-visible' : ''}`} aria-hidden={!active}>
+    <div className={`hero3d__loading${visible ? ' is-visible' : ''}`} aria-hidden={!visible}>
       <span className="hero3d__spinner" />
       Đang tải mô hình 3D…
     </div>
@@ -124,6 +127,9 @@ function LoadingBadge() {
 }
 
 export default function Hero3D() {
+  const [ready, setReady] = useState(false);
+  const markReady = useCallback(() => setReady(true), []);
+
   return (
     <section className="hero3d" aria-label="Không gian sách 3D">
       <div className="hero3d__canvas">
@@ -132,7 +138,7 @@ export default function Hero3D() {
           gl={{ antialias: true, alpha: true }}
           camera={{ position: [0, 1.6, 7.5], fov: 42 }}
         >
-          <HeroScene />
+          <HeroScene onReady={markReady} />
         </Canvas>
       </div>
 
@@ -144,7 +150,7 @@ export default function Hero3D() {
         <p className="hero3d__hint">Kéo chuột để xoay mô hình</p>
       </div>
 
-      <LoadingBadge />
+      <LoadingBadge visible={!ready} />
     </section>
   );
 }

@@ -86,7 +86,7 @@
   top: 18px;
   right: 20px;
   z-index: 3;
-  display: inline-flex;
+  display: none;
   align-items: center;
   gap: 8px;
   padding: 8px 14px;
@@ -95,15 +95,11 @@
   box-shadow: var(--shadow-sm);
   color: var(--color-muted);
   font-size: var(--text-xs);
-  opacity: 0;
-  transform: translateY(-6px);
-  transition: opacity 0.2s ease, transform 0.2s ease;
   pointer-events: none;
 }
 
 .hero3d__loading.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+  display: inline-flex;
 }
 
 .hero3d__spinner {
