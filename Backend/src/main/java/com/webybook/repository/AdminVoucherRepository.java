@@ -34,9 +34,9 @@ public class AdminVoucherRepository {
 
     public long insert(AdminVoucherRequest r) {
         jdbc.update("""
-                INSERT INTO vouchers(code, discount_type, discount_value, minimum_order_amount,
+                INSERT INTO vouchers(code, name, description, discount_type, discount_value, minimum_order_amount,
                     maximum_discount, usage_limit, start_date, end_date, status)
-                VALUES(:code, :discountType, :discountValue, :minimumOrderAmount,
+                VALUES(:code, :name, :description, :discountType, :discountValue, :minimumOrderAmount,
                     :maximumDiscount, :usageLimit, :startDate, :endDate, :status)
                 """, params(r));
         return jdbc.getJdbcOperations().queryForObject("SELECT LAST_INSERT_ID()", Long.class);
@@ -44,7 +44,8 @@ public class AdminVoucherRepository {
 
     public void update(long id, AdminVoucherRequest r) {
         jdbc.update("""
-                UPDATE vouchers SET code=:code, discount_type=:discountType, discount_value=:discountValue,
+                UPDATE vouchers SET code=:code, name=:name, description=:description,
+                    discount_type=:discountType, discount_value=:discountValue,
                     minimum_order_amount=:minimumOrderAmount, maximum_discount=:maximumDiscount,
                     usage_limit=:usageLimit, start_date=:startDate, end_date=:endDate, status=:status
                 WHERE id=:id
@@ -58,6 +59,8 @@ public class AdminVoucherRepository {
 
     private MapSqlParameterSource params(AdminVoucherRequest r) {
         return new MapSqlParameterSource().addValue("code", r.code().trim().toUpperCase())
+                .addValue("name", r.name().trim())
+                .addValue("description", r.description() == null ? "" : r.description().trim())
                 .addValue("discountType", r.discountType().toLowerCase())
                 .addValue("discountValue", r.discountValue())
                 .addValue("minimumOrderAmount", r.minimumOrderAmount())

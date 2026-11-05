@@ -9,6 +9,42 @@ export const API_ENDPOINTS = {
     forgotPassword: '/auth/forgot-password',
     me: '/auth/me',
   },
+  admin: {
+    books: {
+      list: '/admin/books',
+      detail: (id) => `/admin/books/${id}`,
+      create: '/admin/books',
+      update: (id) => `/admin/books/${id}`,
+      remove: (id) => `/admin/books/${id}`,
+    },
+    references: (resource) => `/admin/${resource}`,
+    reference: (resource, id) => `/admin/${resource}/${id}`,
+    users: {
+      list: '/admin/users',
+      detail: (id) => `/admin/users/${id}`,
+      update: (id) => `/admin/users/${id}`,
+    },
+    orders: {
+      list: '/admin/orders',
+      detail: (id) => `/admin/orders/${id}`,
+      updateStatus: (id) => `/admin/orders/${id}/status`,
+    },
+    vouchers: {
+      list: '/admin/vouchers',
+      detail: (id) => `/admin/vouchers/${id}`,
+      create: '/admin/vouchers',
+      update: (id) => `/admin/vouchers/${id}`,
+      remove: (id) => `/admin/vouchers/${id}`,
+    },
+    dashboard: {
+      summary: '/admin/dashboard',
+      ordersByStatus: '/admin/dashboard/orders-by-status',
+      topBooks: '/admin/dashboard/top-selling-books',
+      lowStock: '/admin/dashboard/low-stock',
+      revenueDaily: '/admin/dashboard/revenue/daily',
+      revenueWeekly: '/admin/dashboard/revenue/weekly',
+    },
+  },
   books: {
     list: '/books',
     detail: (id) => `/books/${id}`,

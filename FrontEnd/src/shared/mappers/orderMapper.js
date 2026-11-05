@@ -29,7 +29,7 @@ export function mapOrderFromApi(dto) {
     shippingFee: Number(pick(dto, 'shippingFee', 'shipping_fee')) || 0,
     discount: Number(pick(dto, 'discount', 'discountAmount', 'discount_amount')) || 0,
     total: Number(pick(dto, 'total', 'totalAmount', 'total_amount')) || 0,
-    status: pick(dto, 'status') || 'PENDING',
+    status: String(pick(dto, 'status') || 'pending').toUpperCase(),
     paymentMethod: pick(dto, 'paymentMethod', 'payment_method') || 'COD',
     shippingMethod: pick(dto, 'shippingMethod', 'shipping_method') || 'STANDARD',
     voucherCode: pick(dto, 'voucherCode', 'voucher_code') || '',

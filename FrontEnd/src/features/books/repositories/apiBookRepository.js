@@ -4,7 +4,15 @@ import { mapBookFromApi, mapBookPageFromApi, mapBookToApi } from '@/shared/mappe
 
 export const apiBookRepository = {
   async getBooks(params = {}) {
-    const payload = await request({ url: API_ENDPOINTS.books.list, params });
+    const payload = await request({
+      url: API_ENDPOINTS.books.list,
+      params: {
+        search: params.keyword || params.search || '',
+        categoryId: params.categoryId || undefined,
+        page: params.page || 1,
+        limit: params.pageSize || params.limit || 20,
+      },
+    });
     return mapBookPageFromApi(payload);
   },
 
@@ -25,7 +33,7 @@ export const apiBookRepository = {
 
   async createBook(data) {
     const payload = await request({
-      url: API_ENDPOINTS.books.create,
+      url: API_ENDPOINTS.admin.books.create,
       method: 'POST',
       data: mapBookToApi(data),
     });
@@ -34,7 +42,7 @@ export const apiBookRepository = {
 
   async updateBook(id, data) {
     const payload = await request({
-      url: API_ENDPOINTS.books.update(id),
+      url: API_ENDPOINTS.admin.books.update(id),
       method: 'PUT',
       data: mapBookToApi(data),
     });
@@ -42,12 +50,12 @@ export const apiBookRepository = {
   },
 
   async deleteBook(id) {
-    await request({ url: API_ENDPOINTS.books.remove(id), method: 'DELETE' });
+    await request({ url: API_ENDPOINTS.admin.books.remove(id), method: 'DELETE' });
     return true;
   },
 
-  async updateStock() {
-    // Stock updates are handled by the backend order service.
-    return true;
+  async updateStock(id, delta) {
+    const book = await this.getBookById(id);
+    return this.updateBook(id, { ...book, stock: Math.max(0, book.stock + delta) });
   },
 };

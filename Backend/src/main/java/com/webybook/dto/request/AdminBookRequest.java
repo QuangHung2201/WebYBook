@@ -3,6 +3,7 @@ package com.webybook.dto.request;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.PositiveOrZero;
 import jakarta.validation.constraints.Size;
 
@@ -17,7 +18,7 @@ public record AdminBookRequest(
         String description,
         @NotNull @DecimalMin("0.00") BigDecimal price,
         @NotNull @DecimalMin("0.00") BigDecimal originalPrice,
-        @PositiveOrZero Integer pageCount,
+        @Positive Integer pageCount,
         @PositiveOrZero int stockQuantity,
         @Size(max = 1000) String coverImage,
         @NotBlank String status,

@@ -40,10 +40,11 @@ public class AdminUserRepository {
     public void update(long id, AdminUserUpdateRequest request) {
         jdbc.update("""
                 UPDATE users u JOIN roles r ON r.name=:role
-                SET u.full_name=:fullName, u.phone=:phone, u.role_id=r.id WHERE u.id=:id
+                SET u.full_name=:fullName, u.phone=:phone, u.role_id=r.id, u.status=:status WHERE u.id=:id
                 """, new MapSqlParameterSource()
                 .addValue("id", id).addValue("fullName", request.fullName())
-                .addValue("phone", request.phone()).addValue("role", request.role().name()));
+                .addValue("phone", request.phone()).addValue("role", request.role().name())
+                .addValue("status", request.status().name()));
     }
 
 }

@@ -5,6 +5,8 @@
 - **Frontend:** React + Vite
 - **Backend:** Java 17 + Spring Boot + MySQL/MariaDB
 
+Email: admin@webybook.vn
+Mật khẩu: Admin@123
 ## Yêu cầu
 
 Danh sách đầy đủ môi trường và thư viện xem tại
@@ -67,16 +69,18 @@ npm run dev
 
 Frontend chạy tại `http://localhost:5173`.
 
-Mặc định Frontend dùng dữ liệu mock cho nghiệp vụ nhà sách và API Backend cho
-xác thực. Cấu hình trong `FrontEnd/.env`:
+Frontend dùng API Backend cho xác thực và các nghiệp vụ quản trị đã triển khai.
+Cấu hình trong `FrontEnd/.env`:
 
 ```env
-VITE_DATA_SOURCE=mock
+VITE_DATA_SOURCE=api
 VITE_AUTH_DATA_SOURCE=api
 VITE_API_BASE_URL=http://localhost:8080/api/v1
 ```
 
-Đặt `VITE_DATA_SOURCE=api` nếu muốn Frontend gọi API nghiệp vụ tương ứng.
+Các API nghiệp vụ khách hàng cho catalog, giỏ hàng, đặt hàng, đánh giá, voucher
+và liên hệ đã được kết nối với Backend và database. Thanh toán trực tuyến hiện
+chỉ mô phỏng; đơn COD được lưu với trạng thái `pending`.
 
 ## Kiểm thử và build
 

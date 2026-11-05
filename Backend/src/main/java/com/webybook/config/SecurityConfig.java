@@ -51,6 +51,13 @@ public class SecurityConfig {
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/reset-password"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/categories/**",
+                                "/api/v1/authors/**",
+                                "/api/v1/publishers/**"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/*/reviews").permitAll()
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())

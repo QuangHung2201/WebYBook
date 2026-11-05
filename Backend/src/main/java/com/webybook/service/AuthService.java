@@ -1,6 +1,8 @@
 package com.webybook.service;
 
 import com.webybook.dto.request.LoginRequest;
+import com.webybook.dto.request.ChangePasswordRequest;
+import com.webybook.dto.request.ProfileUpdateRequest;
 import com.webybook.dto.request.RegisterRequest;
 import com.webybook.dto.response.AuthResponse;
 import com.webybook.dto.response.UserResponse;
@@ -137,5 +139,41 @@ public class AuthService {
     @Transactional(readOnly = true)
     public UserResponse getCurrentUser(Authentication authentication) {
         return userService.getCurrentUser(authentication);
+    }
+
+    @Transactional
+    public UserResponse updateProfile(Authentication authentication, ProfileUpdateRequest request) {
+        User user = userService.requireCurrentUser(authentication);
+        String email = ContactNormalizer.normalizeEmail(request.email());
+        String phone = ContactNormalizer.normalizePhone(request.phone());
+        userRepository.findByEmail(email).ifPresent(existing -> {
+            if (!existing.getId().equals(user.getId())) {
+                throw new DuplicateResourceException("Email đã được sử dụng");
+            }
+        });
+        if (phone != null && !phone.isBlank()) {
+            userRepository.findByPhone(phone).ifPresent(existing -> {
+                if (!existing.getId().equals(user.getId())) {
+                    throw new DuplicateResourceException("Số điện thoại đã được sử dụng");
+                }
+            });
+        }
+        user.setFullName(request.fullName().trim());
+        user.setEmail(email);
+        user.setPhone(phone);
+        return UserResponse.from(userRepository.save(user));
+    }
+
+    @Transactional
+    public void changePassword(Authentication authentication, ChangePasswordRequest request) {
+        User user = userService.requireCurrentUser(authentication);
+        if (!passwordEncoder.matches(request.currentPassword(), user.getPassword())) {
+            throw new InvalidCredentialsException();
+        }
+        if (passwordEncoder.matches(request.newPassword(), user.getPassword())) {
+            throw new BadRequestException("Mật khẩu mới phải khác mật khẩu hiện tại");
+        }
+        user.setPassword(passwordEncoder.encode(request.newPassword()));
+        userRepository.save(user);
     }
 }

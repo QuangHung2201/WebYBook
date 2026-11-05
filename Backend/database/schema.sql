@@ -675,6 +675,8 @@ DROP TABLE IF EXISTS `vouchers`;
 CREATE TABLE `vouchers` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `discount_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `discount_value` decimal(12,2) NOT NULL,
   `minimum_order_amount` decimal(12,2) NOT NULL DEFAULT '0.00',

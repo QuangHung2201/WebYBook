@@ -44,11 +44,6 @@ export const apiAuthRepository = {
   },
 
   async logout() {
-    try {
-      await request({ url: API_ENDPOINTS.auth.logout, method: 'POST' });
-    } catch {
-      // Logout locally even if the backend call fails.
-    }
     return true;
   },
 };
