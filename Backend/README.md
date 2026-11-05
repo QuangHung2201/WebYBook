@@ -155,10 +155,13 @@ Get-Content -Raw .\database\schema.sql | mysql -u root -p
 File `database/schema.sql` tạo:
 
 - Database `webybook` với `utf8mb4`
-- Bảng `users`
-- Bảng `password_reset_tokens`
-- Ràng buộc UNIQUE cho `email`, `phone`, `token_hash`
+- Toàn bộ bảng nghiệp vụ của WebYBook, gồm `users` và `password_reset_tokens`
+- Ràng buộc UNIQUE cho `users.email`, `users.phone`, `password_reset_tokens.token_hash`
 - Khóa ngoại `password_reset_tokens.user_id -> users.id`
+
+`database/schema.sql` là schema chuẩn để chia sẻ và triển khai mới. File
+`database/dump-bookstore_db-202611032137.sql` là bản dump cũ, không dùng thay
+cho schema chuẩn vì chưa có bảng reset mật khẩu và một số ràng buộc của Backend.
 
 ### 5.2. Cho phép Hibernate tự tạo bảng (không bắt buộc)
 
