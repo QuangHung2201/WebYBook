@@ -11,11 +11,23 @@ export const apiReviewRepository = {
     const payload = await request({ url: API_ENDPOINTS.reviews.byBook(bookId) });
     return unwrapList(payload);
   },
+  async getMine(bookId) {
+    const payload = await request({ url: API_ENDPOINTS.reviews.mine(bookId) });
+    return payload?.data ?? null;
+  },
   async createReview(bookId, data) {
     const payload = await request({
       url: API_ENDPOINTS.reviews.create(bookId),
       method: 'POST',
-      data,
+      data: { rating: data.rating, comment: String(data.comment || '').trim() },
+    });
+    return payload?.data ?? payload;
+  },
+  async updateReview(id, data) {
+    const payload = await request({
+      url: API_ENDPOINTS.reviews.update(id),
+      method: 'PUT',
+      data: { rating: data.rating, comment: String(data.comment || '').trim() },
     });
     return payload?.data ?? payload;
   },

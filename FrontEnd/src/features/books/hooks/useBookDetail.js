@@ -14,7 +14,7 @@ export function useBookDetail(id) {
     setLoading(true);
     setError(null);
 
-    Promise.all([bookService.getBookById(id), bookService.getRelatedBooks(id, 4)])
+    Promise.all([bookService.getStoreBookById(id), bookService.getRelatedBooks(id, 4)])
       .then(([detail, related]) => {
         if (!active) return;
         setBook(detail);

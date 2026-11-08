@@ -39,8 +39,9 @@ export const mockCartRepository = {
     return buildCart();
   },
 
-  async addItem(bookId, qty = 1) {
+  async addItem(bookOrId, qty = 1) {
     await delay(180);
+    const bookId = typeof bookOrId === 'object' && bookOrId !== null ? bookOrId.id : bookOrId;
     const book = readBooks().find((item) => String(item.id) === String(bookId));
     if (!book) throw new Error('Không tìm thấy sách.');
     if (Number(book.stock) <= 0) throw new Error('Sách này đã hết hàng.');

@@ -3,12 +3,15 @@ package com.webybook.entity;
 import com.webybook.enums.UserRole;
 import com.webybook.enums.UserStatus;
 import jakarta.persistence.Column;
+import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ForeignKey;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -28,7 +31,17 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long id;
+
+    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @JoinColumn(
+            name = "role_id",
+            nullable = false,
+            columnDefinition = "BIGINT UNSIGNED",
+            foreignKey = @ForeignKey(name = "fk_users_role")
+    )
+    private Role roleEntity;
 
     @Column(name = "full_name", nullable = false, length = 100)
     private String fullName;
@@ -36,18 +49,14 @@ public class User {
     @Column(name = "email", nullable = false, length = 150)
     private String email;
 
-    @Column(name = "phone", nullable = false, length = 15)
+    @Column(name = "phone", length = 30)
     private String phone;
 
-    @Column(name = "password", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false, length = 255)
     private String password;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false, length = 30, columnDefinition = "VARCHAR(30)")
-    private UserRole role = UserRole.CUSTOMER;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false, length = 30, columnDefinition = "VARCHAR(30)")
+    @Convert(converter = UserStatusConverter.class)
+    @Column(name = "status", nullable = false, length = 20)
     private UserStatus status = UserStatus.ACTIVE;
 
     @Column(name = "created_at", nullable = false, updatable = false)
@@ -112,11 +121,19 @@ public class User {
     }
 
     public UserRole getRole() {
-        return role;
+        return UserRole.valueOf(roleEntity.getName().toUpperCase());
     }
 
     public void setRole(UserRole role) {
-        this.role = role;
+        this.roleEntity = Role.forName(role.name());
+    }
+
+    public Role getRoleEntity() {
+        return roleEntity;
+    }
+
+    public void setRoleEntity(Role roleEntity) {
+        this.roleEntity = roleEntity;
     }
 
     public UserStatus getStatus() {

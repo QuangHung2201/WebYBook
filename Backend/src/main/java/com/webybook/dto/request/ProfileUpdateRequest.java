@@ -1,0 +1,14 @@
+package com.webybook.dto.request;
+
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+
+public record ProfileUpdateRequest(
+        @NotBlank @Size(min = 2, max = 80) String fullName,
+        @NotBlank @Email @Size(max = 150) String email,
+        @Pattern(regexp = "^(?:\\+84|0)(?:2[0-9]|3[2-9]|5[25689]|7[06-9]|8[1-9]|9[0-9])\\d{7}$")
+        String phone
+) {
+}

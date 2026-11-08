@@ -17,6 +17,24 @@ export const mockVoucherRepository = {
     return deepClone(read());
   },
 
+  async getAvailableVouchers(subtotal) {
+    await delay(180);
+    const now = new Date();
+    return deepClone(
+      read().filter((voucher) => {
+        if (voucher.status !== VOUCHER_STATUS.ACTIVE) return false;
+        if (new Date(voucher.startDate) > now || new Date(voucher.endDate) < now) return false;
+        if (Number(voucher.quantity) > 0 && Number(voucher.used) >= Number(voucher.quantity)) {
+          return false;
+        }
+        if (subtotal !== '' && subtotal !== null && subtotal !== undefined) {
+          if (Number(voucher.minOrder) > Number(subtotal)) return false;
+        }
+        return true;
+      }),
+    );
+  },
+
   async validateVoucher({ code, subtotal }) {
     await delay(320);
     const normalized = String(code || '').trim().toUpperCase();

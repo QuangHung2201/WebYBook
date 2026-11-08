@@ -15,7 +15,22 @@ export function mapOrderItemFromApi(dto) {
   };
 }
 
-export function mapOrderFromApi(dto) {
+function mapStatus(value) {
+  return value ? String(value).toUpperCase() : null;
+}
+
+export function mapOrderHistoryFromApi(dto) {
+  return {
+    id: pick(dto, 'id'),
+    oldStatus: mapStatus(pick(dto, 'oldStatus', 'old_status')),
+    newStatus: mapStatus(pick(dto, 'newStatus', 'new_status')) || '',
+    note: pick(dto, 'note') || '',
+    changedByName: pick(dto, 'changedByName', 'changed_by_name') || '',
+    createdAt: pick(dto, 'createdAt', 'created_at') || null,
+  };
+}
+
+export function mapOrderFromApi(dto, { preserveMissingPayment = false } = {}) {
   if (!dto) return null;
   return {
     id: pick(dto, 'id'),
@@ -29,11 +44,15 @@ export function mapOrderFromApi(dto) {
     shippingFee: Number(pick(dto, 'shippingFee', 'shipping_fee')) || 0,
     discount: Number(pick(dto, 'discount', 'discountAmount', 'discount_amount')) || 0,
     total: Number(pick(dto, 'total', 'totalAmount', 'total_amount')) || 0,
-    status: pick(dto, 'status') || 'PENDING',
-    paymentMethod: pick(dto, 'paymentMethod', 'payment_method') || 'COD',
-    shippingMethod: pick(dto, 'shippingMethod', 'shipping_method') || 'STANDARD',
+    status: String(pick(dto, 'status') || 'pending').toUpperCase(),
+    paymentMethod: pick(dto, 'paymentMethod', 'payment_method') || (preserveMissingPayment ? '' : 'COD'),
+    paymentStatus: pick(dto, 'paymentStatus', 'payment_status') || '',
+    shippingMethod: pick(dto, 'shippingMethod', 'shipping_method') || (preserveMissingPayment ? '' : 'STANDARD'),
     voucherCode: pick(dto, 'voucherCode', 'voucher_code') || '',
     note: pick(dto, 'note') || '',
+    history: (pick(dto, 'history', 'statusHistory', 'status_history') || []).map(
+      mapOrderHistoryFromApi,
+    ),
     createdAt: pick(dto, 'createdAt', 'created_at') || null,
     updatedAt: pick(dto, 'updatedAt', 'updated_at') || null,
   };
@@ -55,14 +74,14 @@ export function mapOrderToApi(model) {
   };
 }
 
-export function mapOrderPageFromApi(payload) {
+export function mapOrderPageFromApi(payload, options) {
   const source = payload?.data ?? payload ?? {};
   const items = Array.isArray(source) ? source : source.items ?? source.content ?? [];
   const total = Array.isArray(source) ? items.length : source.total ?? source.totalElements ?? items.length;
   return {
-    items: items.map(mapOrderFromApi),
+    items: items.map((item) => mapOrderFromApi(item, options)),
     total,
-    page: source.page ?? source.number ?? 1,
+    page: source.page ?? (source.number !== undefined ? source.number + 1 : 1),
     pageSize: source.pageSize ?? source.size ?? items.length,
     totalPages: source.totalPages ?? Math.max(1, Math.ceil(total / (source.pageSize || items.length || 1))),
   };

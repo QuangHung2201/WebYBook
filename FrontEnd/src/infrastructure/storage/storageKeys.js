@@ -12,4 +12,6 @@ export const STORAGE_KEYS = {
   REVIEWS: 'webybook:reviews',
   CONTACTS: 'webybook:contacts',
   CART: 'webybook:cart',
+  GUEST_CART: 'webybook:guest-cart',
+  WISHLIST: 'webybook:wishlist',
 };

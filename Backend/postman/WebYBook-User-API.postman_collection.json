@@ -1,272 +1,511 @@
 {
   "info": {
-    "name": "WebYBook - User Authentication API",
-    "description": "Bộ request Postman cho module đăng ký, đăng nhập, quên mật khẩu và thông tin tài khoản của WebYBook.",
+    "name": "WebYBook API",
+    "description": "Postman collection cho WebYBook hiện tại: authentication, customer và admin. Tài khoản đăng ký mới luôn là CUSTOMER; ADMIN được cấp thủ công trong MySQL.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
-      "name": "1. Đăng ký",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"fullName\": \"Nguyen Van A\",\n  \"email\": \"user@gmail.com\",\n  \"phone\": \"0912345678\",\n  \"password\": \"secret123\",\n  \"confirmPassword\": \"secret123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Đăng ký CUSTOMER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"fullName\": \"Khách hàng Postman\",\n  \"email\": \"{{customerEmail}}\",\n  \"phone\": \"0912345678\",\n  \"password\": \"secret123\",\n  \"confirmPassword\": \"secret123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/auth/register",
+            "description": "Server bỏ qua role từ client và luôn tạo CUSTOMER."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201 Created', () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test('Role là CUSTOMER', () => pm.expect(body.data.role).to.eql('CUSTOMER'));",
+                  "pm.test('Không trả password', () => pm.expect(body.data).to.not.have.property('password'));"
+                ]
+              }
             }
+          ]
+        },
+        {
+          "name": "Đăng nhập CUSTOMER",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customerEmail}}\",\n  \"password\": \"{{customerPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.token) pm.collectionVariables.set('customerToken', body.data.token);",
+                  "pm.test('Role là CUSTOMER', () => pm.expect(body.data.user.role).to.eql('CUSTOMER'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Đăng nhập ADMIN",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/auth/login",
+            "description": "Đặt adminEmail/adminPassword trong collection variables. Tài khoản ADMIN phải được cấp thủ công trong MySQL."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "if (body.data && body.data.token) pm.collectionVariables.set('adminToken', body.data.token);",
+                  "pm.test('Role là ADMIN', () => pm.expect(body.data.user.role).to.eql('ADMIN'));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Thông tin tài khoản hiện tại",
+          "request": {
+            "method": "GET",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{customerToken}}" }
+            ],
+            "url": "{{baseUrl}}/api/v1/auth/me"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200 OK', () => pm.response.to.have.status(200));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Quên mật khẩu",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"{{customerEmail}}\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/auth/forgot-password"
           }
         },
-        "url": "{{baseUrl}}/api/v1/auth/register",
-        "description": "Đăng ký tài khoản mới. Server luôn gán role CUSTOMER và status ACTIVE."
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 201 Created', function () {",
-              "  pm.response.to.have.status(201);",
-              "});",
-              "pm.test('Không trả mật khẩu', function () {",
-              "  const body = pm.response.json();",
-              "  pm.expect(body.data).to.not.have.property('password');",
-              "});"
-            ]
+          "name": "Đặt lại mật khẩu",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"newSecret123\",\n  \"confirmPassword\": \"newSecret123\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/auth/reset-password"
           }
         }
       ]
     },
     {
-      "name": "2. Đăng nhập",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"user@gmail.com\",\n  \"password\": \"secret123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      "name": "Admin - Dashboard",
+      "item": [
+        {
+          "name": "Dashboard tổng quan",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard"
           }
         },
-        "url": "{{baseUrl}}/api/v1/auth/login",
-        "description": "Đăng nhập và tự động lưu JWT vào biến collection token."
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200 OK', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "const body = pm.response.json();",
-              "if (body.success && body.data && body.data.token) {",
-              "  pm.collectionVariables.set('token', body.data.token);",
-              "  pm.test('Đã lưu JWT', function () {",
-              "    pm.expect(body.data.token).to.be.a('string').and.not.empty;",
-              "  });",
-              "}"
-            ]
+          "name": "Đơn hàng theo trạng thái",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/orders-by-status"
+          }
+        },
+        {
+          "name": "Top sách bán chạy",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/top-selling-books"
+          }
+        },
+        {
+          "name": "Sách sắp hết hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/low-stock"
+          }
+        },
+        {
+          "name": "Doanh thu theo ngày",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/revenue/daily?from=2026-01-01&to=2026-12-31"
+          }
+        },
+        {
+          "name": "Doanh thu theo tuần",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard/revenue/weekly?from=2026-01-01&to=2026-12-31"
           }
         }
       ]
     },
     {
-      "name": "3. Thông tin tài khoản",
-      "request": {
-        "method": "GET",
-        "header": [
-          {
-            "key": "Authorization",
-            "value": "Bearer {{token}}"
-          }
-        ],
-        "url": "{{baseUrl}}/api/v1/auth/me",
-        "description": "Yêu cầu JWT hợp lệ. Chạy request Đăng nhập trước để lưu token."
-      },
-      "event": [
+      "name": "Admin - Reviews",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200 OK', function () {",
-              "  pm.response.to.have.status(200);",
-              "});",
-              "pm.test('Đúng tài khoản', function () {",
-              "  const body = pm.response.json();",
-              "  pm.expect(body.data.email).to.eql('user@gmail.com');",
-              "});"
-            ]
+          "name": "Danh sách đánh giá",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/reviews?status=pending&search="
+          }
+        },
+        {
+          "name": "Duyệt đánh giá",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "******" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"approved\"\n}" },
+            "url": "{{baseUrl}}/api/v1/admin/reviews/{{reviewId}}/status"
+          }
+        },
+        {
+          "name": "Từ chối đánh giá",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "******" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"rejected\"\n}" },
+            "url": "{{baseUrl}}/api/v1/admin/reviews/{{reviewId}}/status"
+          }
+        },
+        {
+          "name": "Xóa đánh giá",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/reviews/{{reviewId}}"
           }
         }
       ]
     },
     {
-      "name": "4. Quên mật khẩu",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"user@gmail.com\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": "{{baseUrl}}/api/v1/auth/forgot-password",
-        "description": "Luôn trả cùng một thông báo. Lấy token từ email hoặc log ứng dụng (MAIL_ENABLED=false) rồi gán vào biến resetToken."
-      }
-    },
-    {
-      "name": "5. Đặt lại mật khẩu",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"token\": \"{{resetToken}}\",\n  \"newPassword\": \"newSecret123\",\n  \"confirmPassword\": \"newSecret123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
-          }
-        },
-        "url": "{{baseUrl}}/api/v1/auth/reset-password",
-        "description": "Token chỉ dùng được một lần và có thời hạn 15 phút (mặc định)."
-      },
-      "event": [
+      "name": "Admin - Shipping Methods",
+      "item": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 200 OK', function () {",
-              "  pm.response.to.have.status(200);",
-              "});"
-            ]
+          "name": "Danh sách phương thức giao hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/shipping-methods?search="
+          }
+        },
+        {
+          "name": "Tạo phương thức giao hàng",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "******" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Giao hàng tiêu chuẩn\",\n  \"description\": \"Giao hàng trong 3-5 ngày\",\n  \"shippingFee\": 30000,\n  \"estimatedDays\": 5,\n  \"status\": \"active\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/shipping-methods"
+          }
+        },
+        {
+          "name": "Cập nhật phương thức giao hàng",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "******" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Giao hàng nhanh\",\n  \"description\": \"Giao hàng trong 1-2 ngày\",\n  \"shippingFee\": 50000,\n  \"estimatedDays\": 2,\n  \"status\": \"active\"\n}"
+            },
+            "url": "{{baseUrl}}/api/v1/admin/shipping-methods/{{shippingMethodId}}"
+          }
+        },
+        {
+          "name": "Vô hiệu hóa phương thức giao hàng",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "******" }],
+            "url": "{{baseUrl}}/api/v1/admin/shipping-methods/{{shippingMethodId}}"
           }
         }
       ]
     },
     {
-      "name": "6. Đăng ký - Email đã tồn tại",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"fullName\": \"Nguyen Van B\",\n  \"email\": \"user@gmail.com\",\n  \"phone\": \"0987654321\",\n  \"password\": \"secret123\",\n  \"confirmPassword\": \"secret123\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      "name": "Admin - Catalog",
+      "item": [
+        {
+          "name": "Danh sách sách",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/books?search=&page=1&limit=20"
           }
         },
-        "url": "{{baseUrl}}/api/v1/auth/register",
-        "description": "Kiểm tra lỗi trùng email (HTTP 409)."
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 409 Conflict', function () {",
-              "  pm.response.to.have.status(409);",
-              "});"
-            ]
+          "name": "Chi tiết sách",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Thêm sách",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publisherId\": 1,\n  \"categoryId\": 1,\n  \"isbn\": \"9780000000001\",\n  \"title\": \"Sách kiểm thử WebYBook\",\n  \"description\": \"Dữ liệu kiểm thử\",\n  \"price\": 100000,\n  \"originalPrice\": 120000,\n  \"pageCount\": 200,\n  \"stockQuantity\": 10,\n  \"coverImage\": \"https://example.com/cover.jpg\",\n  \"status\": \"active\",\n  \"authorIds\": [1]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/admin/books"
+          }
+        },
+        {
+          "name": "Cập nhật sách",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"publisherId\": 1,\n  \"categoryId\": 1,\n  \"isbn\": \"9780000000001\",\n  \"title\": \"Sách kiểm thử WebYBook - cập nhật\",\n  \"description\": \"Đã cập nhật\",\n  \"price\": 110000,\n  \"originalPrice\": 120000,\n  \"pageCount\": 200,\n  \"stockQuantity\": 15,\n  \"coverImage\": \"https://example.com/cover.jpg\",\n  \"status\": \"active\",\n  \"authorIds\": [1]\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Ẩn sách",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/books/{{bookId}}"
+          }
+        },
+        {
+          "name": "Danh sách danh mục",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/categories?search="
+          }
+        },
+        {
+          "name": "Danh sách tác giả",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/authors?search="
+          }
+        },
+        {
+          "name": "Danh sách nhà xuất bản",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/publishers?search="
           }
         }
       ]
     },
     {
-      "name": "7. Đăng nhập - Sai mật khẩu",
-      "request": {
-        "method": "POST",
-        "header": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          }
-        ],
-        "body": {
-          "mode": "raw",
-          "raw": "{\n  \"email\": \"user@gmail.com\",\n  \"password\": \"wrong-password\"\n}",
-          "options": {
-            "raw": {
-              "language": "json"
-            }
+      "name": "Admin - Users Orders Vouchers",
+      "item": [
+        {
+          "name": "Danh sách người dùng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/users?search="
           }
         },
-        "url": "{{baseUrl}}/api/v1/auth/login",
-        "description": "Kiểm tra thông báo lỗi chung cho email không tồn tại hoặc sai mật khẩu (HTTP 401)."
-      },
-      "event": [
         {
-          "listen": "test",
-          "script": {
-            "type": "text/javascript",
-            "exec": [
-              "pm.test('HTTP 401 Unauthorized', function () {",
-              "  pm.response.to.have.status(401);",
-              "});",
-              "pm.test('Thông báo không tiết lộ tài khoản', function () {",
-              "  const body = pm.response.json();",
-              "  pm.expect(body.message).to.eql('Email hoặc mật khẩu không chính xác');",
-              "});"
-            ]
+          "name": "Danh sách đơn hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/orders?status="
           }
+        },
+        {
+          "name": "Chi tiết đơn hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}"
+          }
+        },
+        {
+          "name": "Cập nhật trạng thái đơn hàng",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"confirmed\",\n  \"note\": \"Đã xác nhận đơn hàng\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}/status"
+          }
+        },
+        {
+          "name": "Lịch sử đơn hàng",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/orders/{{orderId}}/history"
+          }
+        },
+        {
+          "name": "Danh sách voucher",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/vouchers?search=&status="
+          }
+        },
+        {
+          "name": "Tạo voucher",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Authorization", "value": "Bearer {{adminToken}}" },
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"code\": \"POSTMAN10\",\n  \"discountType\": \"percentage\",\n  \"discountValue\": 10,\n  \"minimumOrderAmount\": 100000,\n  \"maximumDiscount\": 50000,\n  \"usageLimit\": 100,\n  \"startDate\": \"2026-11-05T00:00:00\",\n  \"endDate\": \"2026-12-31T23:59:59\",\n  \"status\": \"active\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": "{{baseUrl}}/api/v1/admin/vouchers"
+          }
+        },
+        {
+          "name": "Vô hiệu hóa voucher",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{adminToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/vouchers/{{voucherId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authorization checks",
+      "item": [
+        {
+          "name": "CUSTOMER bị chặn khỏi Admin",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{customerToken}}" }],
+            "url": "{{baseUrl}}/api/v1/admin/dashboard"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('CUSTOMER nhận HTTP 403', () => pm.response.to.have.status(403));"
+                ]
+              }
+            }
+          ]
         }
       ]
     }
   ],
   "variable": [
-    {
-      "key": "baseUrl",
-      "value": "http://localhost:8080"
-    },
-    {
-      "key": "token",
-      "value": ""
-    },
-    {
-      "key": "resetToken",
-      "value": ""
-    }
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "customerEmail", "value": "customer-postman@example.com" },
+    { "key": "customerPassword", "value": "secret123" },
+    { "key": "adminEmail", "value": "sonkaka@gmail.com" },
+    { "key": "adminPassword", "value": "" },
+    { "key": "customerToken", "value": "" },
+    { "key": "adminToken", "value": "" },
+    { "key": "resetToken", "value": "" },
+    { "key": "bookId", "value": "1" },
+    { "key": "userId", "value": "1" },
+    { "key": "orderId", "value": "1" },
+    { "key": "voucherId", "value": "1" }
   ]
 }

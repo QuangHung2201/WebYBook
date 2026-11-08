@@ -7,6 +7,13 @@ import { formatCurrency } from '@/shared/utils/formatCurrency';
 export default function CartItem({ item, onUpdateQty, onRemove }) {
   const { book, qty } = item;
   const unitPrice = Number(book.discountPrice) || Number(book.price) || 0;
+  const stock = Number(book.stock) || 0;
+  const available = stock > 0 && (!book.status || book.status === 'ACTIVE');
+  const stockMessage = !available
+    ? 'Sách đã hết hàng hoặc ngừng kinh doanh'
+    : qty > stock
+    ? `Chỉ còn ${stock} cuốn. Vui lòng giảm số lượng.`
+    : `Còn ${stock} cuốn`;
 
   return (
     <div className="cart-item">
@@ -20,7 +27,9 @@ export default function CartItem({ item, onUpdateQty, onRemove }) {
           <Link to={`/books/${book.id}`}>{book.title}</Link>
         </h3>
         <p className="cart-item__author">{book.author?.name}</p>
-        <span className="cart-item__stock">Còn {book.stock} cuốn</span>
+        <span className="cart-item__stock" role={qty > stock || !available ? 'status' : undefined}>
+          {stockMessage}
+        </span>
       </div>
 
       <div className="cart-item__price">
@@ -40,7 +49,7 @@ export default function CartItem({ item, onUpdateQty, onRemove }) {
         <button
           type="button"
           onClick={() => onUpdateQty(book.id, qty + 1)}
-          disabled={qty >= book.stock}
+          disabled={!available || qty >= stock}
           aria-label="Tăng số lượng"
         >
           <Plus size={14} />

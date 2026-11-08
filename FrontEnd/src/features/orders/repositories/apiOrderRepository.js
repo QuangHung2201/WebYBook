@@ -8,13 +8,37 @@ import {
 
 export const apiOrderRepository = {
   async getOrders(params = {}) {
-    const payload = await request({ url: API_ENDPOINTS.orders.list, params });
-    return mapOrderPageFromApi(payload);
+    if (params.userId) {
+      const payload = await request({
+        url: API_ENDPOINTS.orders.list,
+        params: {
+          status: params.status ? String(params.status).toLowerCase() : undefined,
+          page: params.page || 1,
+          pageSize: params.pageSize || 10,
+        },
+      });
+      return mapOrderPageFromApi(payload, { preserveMissingPayment: true });
+    }
+    const payload = await request({
+      url: API_ENDPOINTS.admin.orders.list,
+      params: { status: params.status ? String(params.status).toLowerCase() : undefined },
+    });
+    const page = mapOrderPageFromApi(payload);
+    const keyword = String(params.keyword || '').trim().toLowerCase();
+    if (!keyword) return page;
+    const items = page.items.filter((order) =>
+      [order.code, order.customerName, order.phone].some((value) =>
+        String(value || '').toLowerCase().includes(keyword),
+      ),
+    );
+    return { ...page, items, total: items.length, totalPages: 1 };
   },
 
-  async getOrderById(id) {
-    const payload = await request({ url: API_ENDPOINTS.orders.detail(id) });
-    return mapOrderFromApi(payload?.data ?? payload);
+  async getOrderById(id, userId = null) {
+    const payload = await request({
+      url: userId ? API_ENDPOINTS.orders.detail(id) : API_ENDPOINTS.admin.orders.detail(id),
+    });
+    return mapOrderFromApi(payload?.data ?? payload, { preserveMissingPayment: Boolean(userId) });
   },
 
   async createOrder(data) {
@@ -28,9 +52,9 @@ export const apiOrderRepository = {
 
   async updateStatus(id, status) {
     const payload = await request({
-      url: API_ENDPOINTS.orders.updateStatus(id),
-      method: 'PATCH',
-      data: { status },
+      url: API_ENDPOINTS.admin.orders.updateStatus(id),
+      method: 'PUT',
+      data: { status: String(status).toLowerCase() },
     });
     return mapOrderFromApi(payload?.data ?? payload);
   },

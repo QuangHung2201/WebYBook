@@ -5,7 +5,7 @@ import { formatCurrency } from '@/shared/utils/formatCurrency';
 import { formatDateTime } from '@/shared/utils/formatDate';
 import { PAYMENT_METHOD_LABELS } from '@/data/constants/paymentMethods';
 import { SHIPPING_METHODS_LIST } from '@/data/constants/shippingMethods';
-import { CANCELLABLE_STATUSES } from '@/data/constants/orderStatus';
+import { CANCELLABLE_STATUSES, ORDER_STATUS_LABELS } from '@/data/constants/orderStatus';
 import OrderStatus from './OrderStatus';
 
 export default function OrderDetail({ order, onCancel }) {
@@ -61,11 +61,15 @@ export default function OrderDetail({ order, onCancel }) {
           <dl className="info-list">
             <div>
               <dt>Phương thức thanh toán</dt>
-              <dd>{PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}</dd>
+              <dd>{PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || 'Chưa có thông tin'}</dd>
+            </div>
+            <div>
+              <dt>Trạng thái thanh toán</dt>
+              <dd>{order.paymentStatus ? ({ PENDING: 'Chờ thanh toán', PAID: 'Đã thanh toán', FAILED: 'Thất bại', REFUNDED: 'Đã hoàn tiền', CANCELLED: 'Đã hủy' }[order.paymentStatus] || order.paymentStatus) : 'Chưa có thông tin'}</dd>
             </div>
             <div>
               <dt>Phương thức vận chuyển</dt>
-              <dd>{shipping?.label || order.shippingMethod}</dd>
+              <dd>{shipping?.label || order.shippingMethod || 'Chưa có thông tin'}</dd>
             </div>
             {order.voucherCode ? (
               <div>
@@ -80,6 +84,27 @@ export default function OrderDetail({ order, onCancel }) {
           </dl>
         </section>
       </div>
+
+      {order.history?.length ? (
+        <section className="panel order-detail__history">
+          <h3 className="panel-title">Lịch sử đơn hàng</h3>
+          <ol className="order-timeline">
+            {order.history.map((step, index) => (
+              <li key={step.id ?? `${step.newStatus}-${index}`} className="order-timeline__item">
+                <span className="order-timeline__dot" aria-hidden="true" />
+                <div className="order-timeline__body">
+                  <strong>{ORDER_STATUS_LABELS[step.newStatus] || step.newStatus}</strong>
+                  <span className="muted">
+                    {formatDateTime(step.createdAt)}
+                    {step.changedByName ? ` · ${step.changedByName}` : ''}
+                  </span>
+                  {step.note ? <p className="order-timeline__note">{step.note}</p> : null}
+                </div>
+              </li>
+            ))}
+          </ol>
+        </section>
+      ) : null}
 
       <section className="panel order-detail__items">
         <h3 className="panel-title">Sản phẩm ({order.items.length})</h3>

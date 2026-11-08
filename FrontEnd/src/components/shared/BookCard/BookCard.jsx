@@ -19,11 +19,27 @@ export default function BookCard({ book, onAddToCart }) {
       </Link>
 
       <div className="book-card__body">
-        <span className="book-card__category">{book.category?.name || 'Sách'}</span>
+        <span className="book-card__category">
+          {book.category?.id ? (
+            <Link to={`/books?category=${book.category.id}`} className="book-card__category-link">
+              {book.category.name}
+            </Link>
+          ) : (
+            book.category?.name || 'Sách'
+          )}
+        </span>
         <h3 className="book-card__title">
           <Link to={`/books/${book.id}`}>{book.title}</Link>
         </h3>
-        <p className="book-card__author">{book.author?.name || 'Đang cập nhật'}</p>
+        <p className="book-card__author">
+          {book.author?.id ? (
+            <Link to={`/books?author=${book.author.id}`} className="book-card__author-link">
+              {book.author.name}
+            </Link>
+          ) : (
+            book.author?.name || 'Đang cập nhật'
+          )}
+        </p>
 
         <div className="book-card__rating">
           <RatingStars rating={book.rating} count={book.reviewCount} />

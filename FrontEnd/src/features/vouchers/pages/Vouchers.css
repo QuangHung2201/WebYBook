@@ -1,0 +1,134 @@
+.voucher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 20px;
+}
+
+.voucher-card {
+  display: grid;
+  grid-template-columns: 150px minmax(0, 1fr);
+  background: var(--color-surface);
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: box-shadow var(--transition), border-color var(--transition);
+}
+
+.voucher-card:hover {
+  box-shadow: var(--shadow-sm);
+  border-color: #f3d3b8;
+}
+
+.voucher-card__value {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 18px 12px;
+  text-align: center;
+  color: var(--color-primary-dark);
+  background: linear-gradient(160deg, var(--color-primary-soft), #fff4e8);
+  border-right: 1px dashed var(--color-line);
+}
+
+.voucher-card__value strong {
+  font-size: var(--text-lg);
+  line-height: 1.2;
+}
+
+.voucher-card__value span {
+  font-size: 11px;
+  color: var(--color-muted);
+}
+
+.voucher-card__body {
+  display: grid;
+  gap: 8px;
+  padding: 16px 18px;
+  align-content: start;
+}
+
+.voucher-card__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.voucher-card__head h3 {
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+}
+
+.voucher-card__code {
+  font-family: var(--font-mono, monospace);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  padding: 4px 9px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--color-primary);
+  color: var(--color-primary-dark);
+  background: var(--color-primary-soft);
+}
+
+.voucher-card__desc {
+  font-size: var(--text-xs);
+  color: var(--color-ink-soft);
+  line-height: 1.6;
+}
+
+.voucher-card__status {
+  width: fit-content;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.voucher-card__status--available { color: #15803d; }
+.voucher-card__status--upcoming { color: #1d4ed8; }
+.voucher-card__status--expired,
+.voucher-card__status--used,
+.voucher-card__status--exhausted,
+.voucher-card__status--inactive { color: #b45309; }
+
+.voucher-card__meta {
+  display: grid;
+  gap: 3px;
+  font-size: var(--text-xs);
+  color: var(--color-muted);
+}
+
+.voucher-card__meta strong {
+  color: var(--color-ink-soft);
+}
+
+.voucher-card__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.voucher-card__shop {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.voucher-card__shop:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 520px) {
+  .voucher-card {
+    grid-template-columns: 1fr;
+  }
+
+  .voucher-card__value {
+    border-right: none;
+    border-bottom: 1px dashed var(--color-line);
+  }
+}

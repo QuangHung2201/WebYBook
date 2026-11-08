@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { cn } from '../../../shared/utils/cn';
 import './BookCover.css';
 
@@ -52,9 +52,13 @@ function escapeXml(value) {
 }
 
 export default function BookCover({ title = '', author = '', coverImage = '', className = '', eager = false }) {
-  const src = useMemo(() => {
-    if (coverImage) return coverImage;
+  const [imageError, setImageError] = useState(false);
 
+  useEffect(() => {
+    setImageError(false);
+  }, [coverImage]);
+
+  const fallbackSvg = useMemo(() => {
     const [from, to] = PALETTES[hashString(title) % PALETTES.length];
     const lines = wrapTitle(title);
     const authorName = String(author || '').slice(0, 26);
@@ -82,14 +86,17 @@ export default function BookCover({ title = '', author = '', coverImage = '', cl
     </svg>`;
 
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
-  }, [title, author, coverImage]);
+  }, [title, author]);
+
+  const hasValidImage = Boolean(coverImage && !imageError);
 
   return (
     <img
       className={cn('book-cover', className)}
-      src={src}
+      src={hasValidImage ? coverImage : fallbackSvg}
       alt={title ? `Bìa sách ${title}` : 'Bìa sách'}
       loading={eager ? 'eager' : 'lazy'}
+      onError={() => setImageError(true)}
     />
   );
 }

@@ -68,6 +68,10 @@
   font-weight: 600;
 }
 
+.cart-item__stock[role='status'] {
+  color: var(--color-danger);
+}
+
 .qty-stepper {
   display: inline-flex;
   align-items: center;

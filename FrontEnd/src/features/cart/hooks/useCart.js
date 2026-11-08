@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { useToast } from '@/app/providers/ToastProvider';
+import { useAuth } from '@/features/auth/hooks/useAuth';
 import { useCartStore } from '../store/cartStore';
 
 export function useCart() {
@@ -7,20 +8,22 @@ export function useCart() {
   const subtotal = useCartStore((state) => state.subtotal);
   const count = useCartStore((state) => state.count);
   const loading = useCartStore((state) => state.loading);
-  const initialized = useCartStore((state) => state.initialized);
   const error = useCartStore((state) => state.error);
 
   const fetchCart = useCartStore((state) => state.fetchCart);
+  const syncForUser = useCartStore((state) => state.syncForUser);
   const addItem = useCartStore((state) => state.addItem);
   const updateItem = useCartStore((state) => state.updateItem);
   const removeItem = useCartStore((state) => state.removeItem);
   const clear = useCartStore((state) => state.clear);
 
+  const { user } = useAuth();
+  const userId = user?.id ?? null;
   const toast = useToast();
 
   useEffect(() => {
-    if (!initialized && !loading) fetchCart();
-  }, [initialized, loading, fetchCart]);
+    syncForUser(userId);
+  }, [userId, syncForUser]);
 
   const addToCart = async (book, qty = 1) => {
     try {

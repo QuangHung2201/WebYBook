@@ -9,6 +9,7 @@ import { bookSchema } from '@/features/books/schemas/bookSchema';
 import { BOOK_STATUS, BOOK_STATUS_OPTIONS } from '@/data/constants/bookStatus';
 
 const EMPTY_VALUES = {
+  isbn: '',
   title: '',
   authorId: '',
   categoryId: '',
@@ -24,6 +25,7 @@ const EMPTY_VALUES = {
 function toFormValues(book) {
   if (!book) return EMPTY_VALUES;
   return {
+    isbn: book.isbn || '',
     title: book.title || '',
     authorId: String(book.author?.id ?? ''),
     categoryId: String(book.category?.id ?? ''),
@@ -96,6 +98,12 @@ export default function BookFormModal({ open, book, lookups, saving, onClose, on
       <form id="admin-book-form" className="admin-form-grid" onSubmit={submit} noValidate>
         <div className="admin-form-section">
           <span className="admin-form-section__title">Thông tin cơ bản</span>
+          <Input
+            label="ISBN"
+            placeholder="Ví dụ: 9786041234567"
+            error={errors.isbn?.message}
+            {...register('isbn')}
+          />
           <Input
             label="Tên sách"
             placeholder="Ví dụ: Nhà giả kim"

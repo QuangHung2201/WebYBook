@@ -2,6 +2,8 @@ import { bookService } from '@/features/books/services/bookService';
 import { orderService } from '@/features/orders/services/orderService';
 import { userService } from '@/features/users/services/userService';
 import { ORDER_STATUS, ORDER_STATUS_LABELS } from '@/data/constants/orderStatus';
+import { isApiDataSource } from '@/infrastructure/config/environment';
+import { apiDashboardRepository } from '../repositories/apiDashboardRepository';
 
 export const LOW_STOCK_THRESHOLD = 10;
 
@@ -104,6 +106,8 @@ export const dashboardService = {
   loadDataset,
 
   async getOverview() {
+    if (isApiDataSource()) return apiDashboardRepository.getOverview();
+
     const { books, orders, users } = await loadDataset();
     const validOrders = orders.filter((order) => order.status !== ORDER_STATUS.CANCELLED);
     const totalRevenue = validOrders.reduce((sum, order) => sum + (Number(order.total) || 0), 0);

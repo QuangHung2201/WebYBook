@@ -49,8 +49,20 @@ public class SecurityConfig {
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/login",
                                 "/api/v1/auth/forgot-password",
-                                "/api/v1/auth/reset-password"
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/contacts"
                         ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/*/reviews/mine").authenticated()
+                        .requestMatchers("/api/v1/cart", "/api/v1/cart/**", "/api/v1/wishlist/**").hasRole("CUSTOMER")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/**").permitAll()
+                        .requestMatchers(HttpMethod.GET,
+                                "/api/v1/categories/**",
+                                "/api/v1/authors/**",
+                                "/api/v1/publishers/**",
+                                "/api/v1/vouchers"
+                        ).permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/books/*/reviews").permitAll()
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/error").permitAll()
                         .anyRequest().authenticated())
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

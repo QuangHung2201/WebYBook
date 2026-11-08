@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { BOOK_STATUS } from '@/data/constants/bookStatus';
 
 export const bookSchema = z.object({
+  isbn: z.string().trim().min(1, 'Vui lòng nhập ISBN.').max(20, 'ISBN quá dài.'),
   title: z.string().trim().min(2, 'Vui lòng nhập tên sách.').max(160, 'Tên sách quá dài.'),
   authorId: z.coerce.number({ invalid_type_error: 'Chọn tác giả.' }).int().positive('Chọn tác giả.'),
   categoryId: z.coerce.number({ invalid_type_error: 'Chọn danh mục.' }).int().positive('Chọn danh mục.'),

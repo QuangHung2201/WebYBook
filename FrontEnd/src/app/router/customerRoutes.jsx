@@ -8,6 +8,8 @@ import OrderHistoryPage from '@/features/orders/pages/OrderHistoryPage';
 import OrderDetailPage from '@/features/orders/pages/OrderDetailPage';
 import ProfilePage from '@/features/users/pages/ProfilePage';
 import ContactPage from '@/features/contact/pages/ContactPage';
+import WishlistPage from '@/features/wishlist/pages/WishlistPage';
+import VoucherListPage from '@/features/vouchers/pages/VoucherListPage';
 import NotFoundPage from '@/app/pages/NotFoundPage';
 import ProtectedRoute from './ProtectedRoute';
 
@@ -20,6 +22,7 @@ export const customerRoutes = [
       { path: 'books/:id', element: <BookDetailPage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'contact', element: <ContactPage /> },
+      { path: 'vouchers', element: <VoucherListPage /> },
       {
         element: <ProtectedRoute />,
         children: [
@@ -27,6 +30,7 @@ export const customerRoutes = [
           { path: 'orders', element: <OrderHistoryPage /> },
           { path: 'orders/:id', element: <OrderDetailPage /> },
           { path: 'profile', element: <ProfilePage /> },
+          { path: 'wishlist', element: <WishlistPage /> },
         ],
       },
       { path: '*', element: <NotFoundPage /> },

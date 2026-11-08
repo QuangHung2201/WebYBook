@@ -25,6 +25,10 @@ export const bookService = {
     return bookRepository.getBookById(id);
   },
 
+  getStoreBookById(id) {
+    return bookRepository.getBookById(id, { status: BOOK_STATUS.ACTIVE });
+  },
+
   getRelatedBooks(id, limit = 4) {
     return bookRepository.getRelatedBooks(id, limit);
   },
