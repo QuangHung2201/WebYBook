@@ -15,7 +15,7 @@ export default function LoginForm({ submitting, onSubmit }) {
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', remember: true },
   });
-
+// sau khi nhận thông tin => onSubmit được truyền từ LoginPage.jsx.
   return (
     <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
       <Input

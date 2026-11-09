@@ -4,7 +4,9 @@ function pick(value, ...keys) {
   }
   return undefined;
 }
-
+// xử lý dữ liệu user từ API về dạng model của ứng dụng
+//=> Sau đó AuthProvider lưu token và user vào localStorage.
+// kiểm tra route => Route admin được cấu hình trong adminRoutes
 export function mapUserFromApi(dto) {
   if (!dto) return null;
   const email = pick(dto, 'email') || '';

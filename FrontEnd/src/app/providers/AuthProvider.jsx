@@ -47,6 +47,11 @@ export function AuthProvider({ children }) {
     };
   }, [token]);
 
+//Lưu JWT vào localStorage với key webybook:auth-token.
+//Lưu thông tin user với key webybook:auth-user.
+//Cập nhật state token.
+//Cập nhật state user.
+//  AuthProvider gọi  AuthService chuẩn hóa dữ liệu
   const login = useCallback(async (credentials) => {
     const result = await authService.login(credentials);
     localStorageAdapter.set(STORAGE_KEYS.AUTH_TOKEN, result.token);

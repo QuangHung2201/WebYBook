@@ -1,5 +1,6 @@
 import { authRepository } from '../repositories/authRepository';
-
+//AuthService chuẩn hóa dữ liệu
+//Service loại bỏ khoảng trắng ở đầu/cuối email rồi gọi authRepository
 export const authService = {
   login(credentials) {
     return authRepository.login({
@@ -8,7 +9,13 @@ export const authService = {
     });
   },
 
+  // chuẩn hóa dữ liệu trước khi gọi authRepository
+  // loại bỏ khoảng trắng ở đầu/cuối email, fullName, phone
+  // password và confirmPassword giữ nguyên
+  // phone có thể là chuỗi rỗng nếu không có giá trị
+  //gửi dữ liệu đã chuẩn hóa đến authRepository để thực hiện đăng ký
   register(data) {
+
     return authRepository.register({
       email: data.email?.trim(),
       password: data.password,

@@ -20,7 +20,7 @@ export default function RegisterForm({ submitting, onSubmit }) {
       confirmPassword: '',
     },
   });
-
+// nhận thông tin và validate => onSubmit được truyền từ RegisterPage
   return (
     <form className="auth-form" onSubmit={handleSubmit(onSubmit)}>
       <Input
