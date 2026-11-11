@@ -2,14 +2,34 @@ import { request } from '@/infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '@/infrastructure/api/apiConfig';
 import { mapBookFromApi, mapBookPageFromApi, mapBookToApi } from '@/shared/mappers/bookMapper';
 
+const optional = (value) => (value === '' || value === null || value === undefined ? undefined : value);
+
 export const apiBookRepository = {
   async getBooks(params = {}) {
-    const payload = await request({ url: API_ENDPOINTS.books.list, params });
+    const payload = await request({
+      url: API_ENDPOINTS.books.list,
+      params: {
+        search: params.keyword || params.search || '',
+        categoryId: optional(params.categoryId),
+        authorId: optional(params.authorId),
+        publisherId: optional(params.publisherId),
+        minPrice: optional(params.minPrice),
+        maxPrice: optional(params.maxPrice),
+        minRating: optional(params.minRating),
+        status: optional(params.status),
+        sort: optional(params.sort),
+        page: params.page || 1,
+        limit: params.pageSize || params.limit || 20,
+      },
+    });
     return mapBookPageFromApi(payload);
   },
 
-  async getBookById(id) {
-    const payload = await request({ url: API_ENDPOINTS.books.detail(id) });
+  async getBookById(id, params = {}) {
+    const payload = await request({
+      url: API_ENDPOINTS.books.detail(id),
+      params: { status: optional(params.status) },
+    });
     return mapBookFromApi(payload?.data ?? payload);
   },
 
@@ -25,7 +45,7 @@ export const apiBookRepository = {
 
   async createBook(data) {
     const payload = await request({
-      url: API_ENDPOINTS.books.create,
+      url: API_ENDPOINTS.admin.books.create,
       method: 'POST',
       data: mapBookToApi(data),
     });
@@ -34,7 +54,7 @@ export const apiBookRepository = {
 
   async updateBook(id, data) {
     const payload = await request({
-      url: API_ENDPOINTS.books.update(id),
+      url: API_ENDPOINTS.admin.books.update(id),
       method: 'PUT',
       data: mapBookToApi(data),
     });
@@ -42,12 +62,12 @@ export const apiBookRepository = {
   },
 
   async deleteBook(id) {
-    await request({ url: API_ENDPOINTS.books.remove(id), method: 'DELETE' });
+    await request({ url: API_ENDPOINTS.admin.books.remove(id), method: 'DELETE' });
     return true;
   },
 
-  async updateStock() {
-    // Stock updates are handled by the backend order service.
-    return true;
+  async updateStock(id, delta) {
+    const book = await this.getBookById(id);
+    return this.updateBook(id, { ...book, stock: Math.max(0, book.stock + delta) });
   },
 };

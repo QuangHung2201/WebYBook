@@ -1,25 +1,31 @@
 export const ORDER_STATUS = {
   PENDING: 'PENDING',
   CONFIRMED: 'CONFIRMED',
+  PROCESSING: 'PROCESSING',
   SHIPPING: 'SHIPPING',
   DELIVERED: 'DELIVERED',
   CANCELLED: 'CANCELLED',
+  RETURNED: 'RETURNED',
 };
 
 export const ORDER_STATUS_LABELS = {
   [ORDER_STATUS.PENDING]: 'Chờ xác nhận',
   [ORDER_STATUS.CONFIRMED]: 'Đã xác nhận',
+  [ORDER_STATUS.PROCESSING]: 'Đang chuẩn bị hàng',
   [ORDER_STATUS.SHIPPING]: 'Đang giao',
   [ORDER_STATUS.DELIVERED]: 'Đã giao',
   [ORDER_STATUS.CANCELLED]: 'Đã hủy',
+  [ORDER_STATUS.RETURNED]: 'Đã hoàn trả',
 };
 
 export const ORDER_STATUS_TONES = {
   [ORDER_STATUS.PENDING]: 'warning',
   [ORDER_STATUS.CONFIRMED]: 'info',
+  [ORDER_STATUS.PROCESSING]: 'info',
   [ORDER_STATUS.SHIPPING]: 'info',
   [ORDER_STATUS.DELIVERED]: 'success',
   [ORDER_STATUS.CANCELLED]: 'danger',
+  [ORDER_STATUS.RETURNED]: 'warning',
 };
 
 export const ORDER_STATUS_OPTIONS = Object.values(ORDER_STATUS).map((value) => ({

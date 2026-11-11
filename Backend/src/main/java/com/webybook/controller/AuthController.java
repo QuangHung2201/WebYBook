@@ -1,7 +1,9 @@
 package com.webybook.controller;
 
 import com.webybook.dto.request.ForgotPasswordRequest;
+import com.webybook.dto.request.ChangePasswordRequest;
 import com.webybook.dto.request.LoginRequest;
+import com.webybook.dto.request.ProfileUpdateRequest;
 import com.webybook.dto.request.RegisterRequest;
 import com.webybook.dto.request.ResetPasswordRequest;
 import com.webybook.dto.response.ApiResponse;
@@ -60,5 +62,21 @@ public class AuthController {
     @GetMapping("/me")
     public ApiResponse<UserResponse> getCurrentUser(Authentication authentication) {
         return ApiResponse.success("Lấy thông tin tài khoản thành công", authService.getCurrentUser(authentication));
+    }
+
+    @org.springframework.web.bind.annotation.PutMapping("/me")
+    public ApiResponse<UserResponse> updateProfile(
+            Authentication authentication, @Valid @RequestBody ProfileUpdateRequest request
+    ) {
+        return ApiResponse.success("Cập nhật thông tin tài khoản thành công",
+                authService.updateProfile(authentication, request));
+    }
+
+    @org.springframework.web.bind.annotation.PatchMapping("/me/password")
+    public ApiResponse<Void> changePassword(
+            Authentication authentication, @Valid @RequestBody ChangePasswordRequest request
+    ) {
+        authService.changePassword(authentication, request);
+        return ApiResponse.success("Đổi mật khẩu thành công");
     }
 }

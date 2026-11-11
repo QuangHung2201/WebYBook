@@ -1,21 +1,41 @@
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Input, Textarea } from '@/components/common/Input/Input';
 import Button from '@/components/common/Button/Button';
 import { contactSchema } from '../schemas/contactSchema';
 
-export default function ContactForm({ submitting, onSubmit }) {
+export default function ContactForm({ submitting, onSubmit, user }) {
   const {
     register,
     handleSubmit,
     reset,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(contactSchema),
-    defaultValues: { name: '', email: '', phone: '', subject: '', message: '' },
+    defaultValues: {
+      name: user?.fullName || '',
+      email: user?.email || '',
+      phone: user?.phone || '',
+      subject: '',
+      message: '',
+    },
   });
 
+  useEffect(() => {
+    if (!isDirty) {
+      reset({
+        name: user?.fullName || '',
+        email: user?.email || '',
+        phone: user?.phone || '',
+        subject: '',
+        message: '',
+      });
+    }
+  }, [user?.id, user?.fullName, user?.email, user?.phone, isDirty, reset]);
+
   const submit = async (data) => {
+    if (submitting) return;
     const success = await onSubmit(data);
     if (success) reset();
   };

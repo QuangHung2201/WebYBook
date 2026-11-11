@@ -78,6 +78,28 @@
   padding: 26px;
 }
 
+.contact-history {
+  display: grid;
+  gap: 14px;
+  margin-top: 24px;
+}
+
+.contact-history__item {
+  padding: 14px 0;
+  border-top: 1px solid var(--color-line);
+}
+
+.contact-history__head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.contact-history__head span { color: var(--color-primary-dark); }
+.contact-history__item p { margin: 8px 0; white-space: pre-wrap; }
+.contact-history__error { color: var(--color-danger); }
+
 @media (max-width: 900px) {
   .contact-layout {
     grid-template-columns: 1fr;

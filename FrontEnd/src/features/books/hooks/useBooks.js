@@ -7,8 +7,11 @@ const DEFAULT_PARAMS = {
   sort: 'newest',
   keyword: '',
   categoryId: '',
+  authorId: '',
+  publisherId: '',
   minPrice: '',
   maxPrice: '',
+  minRating: '',
 };
 
 export function useBooks(initialParams = {}) {

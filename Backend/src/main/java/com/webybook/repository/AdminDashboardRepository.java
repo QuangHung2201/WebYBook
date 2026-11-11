@@ -24,6 +24,7 @@ public class AdminDashboardRepository {
                   (SELECT COUNT(*) FROM books WHERE status <> 'deleted') total_books,
                   (SELECT COUNT(*) FROM orders) total_orders,
                   (SELECT COUNT(*) FROM users) total_users,
+                  (SELECT COUNT(*) FROM users WHERE status = 'ACTIVE') active_users,
                   (SELECT COALESCE(SUM(total_amount), 0) FROM orders
                    WHERE status NOT IN ('cancelled', 'canceled')) total_revenue,
                   (SELECT COUNT(*) FROM orders WHERE status = 'pending') pending_orders,

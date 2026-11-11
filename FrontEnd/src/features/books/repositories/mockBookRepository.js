@@ -22,6 +22,7 @@ function applyFilters(items, params) {
     publisherId = null,
     minPrice = null,
     maxPrice = null,
+    minRating = null,
     status = null,
   } = params;
 
@@ -46,6 +47,9 @@ function applyFilters(items, params) {
   }
   if (maxPrice !== null && maxPrice !== '') {
     result = result.filter((book) => priceOf(book) <= Number(maxPrice));
+  }
+  if (minRating !== null && minRating !== '') {
+    result = result.filter((book) => Number(book.rating) >= Number(minRating));
   }
 
   return result;

@@ -2,6 +2,11 @@ import { request } from '@/infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '@/infrastructure/api/apiConfig';
 
 export const apiContactRepository = {
+  async getMyContacts() {
+    const payload = await request({ url: API_ENDPOINTS.contacts.mine });
+    const data = payload?.data ?? payload;
+    return Array.isArray(data) ? data : data?.items ?? [];
+  },
   async sendContact(data) {
     const payload = await request({
       url: API_ENDPOINTS.contacts.send,

@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 
 public record AdminVoucherRequest(
         @NotBlank String code,
+        @NotBlank String name,
+        String description,
         @NotBlank String discountType,
         @NotNull @DecimalMin("0.00") BigDecimal discountValue,
         @NotNull @DecimalMin("0.00") BigDecimal minimumOrderAmount,

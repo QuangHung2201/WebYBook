@@ -31,10 +31,16 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(columnDefinition = "BIGINT UNSIGNED")
     private Long id;
 
     @ManyToOne(fetch = FetchType.EAGER, optional = false)
-    @JoinColumn(name = "role_id", nullable = false, foreignKey = @ForeignKey(name = "fk_users_role"))
+    @JoinColumn(
+            name = "role_id",
+            nullable = false,
+            columnDefinition = "BIGINT UNSIGNED",
+            foreignKey = @ForeignKey(name = "fk_users_role")
+    )
     private Role roleEntity;
 
     @Column(name = "full_name", nullable = false, length = 100)

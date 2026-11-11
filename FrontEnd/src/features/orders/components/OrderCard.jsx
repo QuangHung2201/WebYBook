@@ -5,6 +5,7 @@ import { formatCurrency } from '@/shared/utils/formatCurrency';
 import { formatDate } from '@/shared/utils/formatDate';
 import { CANCELLABLE_STATUSES } from '@/data/constants/orderStatus';
 import OrderStatus from './OrderStatus';
+import { PAYMENT_METHOD_LABELS } from '@/data/constants/paymentMethods';
 
 export default function OrderCard({ order, onCancel }) {
   const totalQty = order.items.reduce((sum, item) => sum + item.qty, 0);
@@ -34,7 +35,7 @@ export default function OrderCard({ order, onCancel }) {
 
       <footer className="order-card__foot">
         <div className="order-card__total">
-          <span>{totalQty} sản phẩm</span>
+          <span>{totalQty} sản phẩm · {PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod || 'Chưa có thông tin thanh toán'}</span>
           <strong>{formatCurrency(order.total)}</strong>
         </div>
         <div className="order-card__actions">

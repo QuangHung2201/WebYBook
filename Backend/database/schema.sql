@@ -675,6 +675,8 @@ DROP TABLE IF EXISTS `vouchers`;
 CREATE TABLE `vouchers` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` varchar(500) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `discount_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL,
   `discount_value` decimal(12,2) NOT NULL,
   `minimum_order_amount` decimal(12,2) NOT NULL DEFAULT '0.00',
@@ -763,6 +765,47 @@ LOCK TABLES `wishlists` WRITE;
 /*!40000 ALTER TABLE `wishlists` DISABLE KEYS */;
 /*!40000 ALTER TABLE `wishlists` ENABLE KEYS */;
 UNLOCK TABLES;
+
+--
+-- Table structure for table `contact_messages`
+--
+-- Bảng này cũng được repository tự tạo bằng CREATE TABLE IF NOT EXISTS để
+-- tương thích với các cơ sở dữ liệu đã được khởi tạo trước đó.
+--
+
+CREATE TABLE IF NOT EXISTS `contact_messages` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `subject` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `message` text COLLATE utf8mb4_unicode_ci NOT NULL,
+  `user_id` bigint unsigned DEFAULT NULL,
+  `status` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'pending',
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `idx_contact_messages_email` (`email`),
+  KEY `idx_contact_messages_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contact form submissions';
+
+--
+-- Table structure for table `book_previews`
+--
+-- Mục lục và nội dung đọc thử. Quan hệ với books được khai báo ở schema để
+-- bảo toàn tính toàn vẹn dữ liệu; repository tạo bảng không FK khi khởi động
+-- nhằm không ảnh hưởng môi trường test H2.
+--
+
+CREATE TABLE IF NOT EXISTS `book_previews` (
+  `book_id` bigint unsigned NOT NULL,
+  `table_of_contents` text COLLATE utf8mb4_unicode_ci,
+  `preview_content` text COLLATE utf8mb4_unicode_ci,
+  `preview_page_count` int unsigned DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`book_id`),
+  CONSTRAINT `fk_book_previews_book` FOREIGN KEY (`book_id`) REFERENCES `books` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Book table of contents and preview content';
 
 --
 -- Dumping routines for database 'bookstore_db'

@@ -1,18 +1,27 @@
 import { request } from '@/infrastructure/api/apiClient';
 import { API_ENDPOINTS } from '@/infrastructure/api/apiConfig';
+import { mapBookFromApi } from '@/shared/mappers/bookMapper';
 
 /**
- * Expected backend shape: { items: [{ book: {...}, qty }], subtotal, count }
- * If the backend returns a different shape, adjust this mapper only.
+ * Backend trả về item phẳng ({ bookId, qty, title, price... }) hoặc item lồng
+ * ({ book: {...}, qty }). Chuẩn hóa cả hai về model Book của ứng dụng.
  */
+const mapCartItem = (item) => {
+  const rawBook = item.book ?? item.product ?? item;
+  return {
+    book: mapBookFromApi({
+      ...rawBook,
+      id: rawBook.id ?? item.bookId,
+    }),
+    qty: Number(item.qty ?? item.quantity) || 1,
+  };
+};
+
 const mapCart = (payload) => {
   const data = payload?.data ?? payload ?? {};
   const items = data.items ?? data.cartItems ?? [];
   return {
-    items: items.map((item) => ({
-      book: item.book ?? item.product ?? item,
-      qty: Number(item.qty ?? item.quantity) || 1,
-    })),
+    items: items.map(mapCartItem),
     subtotal: Number(data.subtotal ?? data.total) || 0,
     count: Number(data.count ?? data.totalItems) || 0,
   };
@@ -24,7 +33,8 @@ export const apiCartRepository = {
     return mapCart(payload);
   },
 
-  async addItem(bookId, qty = 1) {
+  async addItem(book, qty = 1) {
+    const bookId = typeof book === 'object' ? book.id : book;
     const payload = await request({
       url: API_ENDPOINTS.cart.addItem,
       method: 'POST',

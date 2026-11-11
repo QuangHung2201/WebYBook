@@ -12,19 +12,19 @@ export const apiCategoryRepository = {
     return unwrapList(payload);
   },
   async createCategory(data) {
-    const payload = await request({ url: API_ENDPOINTS.categories.create, method: 'POST', data });
+    const payload = await request({ url: API_ENDPOINTS.admin.references('categories'), method: 'POST', data });
     return payload?.data ?? payload;
   },
   async updateCategory(id, data) {
     const payload = await request({
-      url: API_ENDPOINTS.categories.update(id),
+      url: API_ENDPOINTS.admin.reference('categories', id),
       method: 'PUT',
       data,
     });
     return payload?.data ?? payload;
   },
   async deleteCategory(id) {
-    await request({ url: API_ENDPOINTS.categories.remove(id), method: 'DELETE' });
+    await request({ url: API_ENDPOINTS.admin.reference('categories', id), method: 'DELETE' });
     return true;
   },
 };

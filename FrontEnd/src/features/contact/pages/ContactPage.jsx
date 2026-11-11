@@ -1,5 +1,7 @@
 import { Clock, Mail, MapPin, Phone } from 'lucide-react';
 import { appConfig } from '@/infrastructure/config/appConfig';
+import { useAuth } from '@/features/auth/hooks/useAuth';
+import { formatDateTime } from '@/shared/utils/formatDate';
 import { useContact } from '../hooks/useContact';
 import ContactForm from '../components/ContactForm';
 import './ContactPage.css';
@@ -12,7 +14,8 @@ const INFO = [
 ];
 
 export default function ContactPage() {
-  const { submitting, sendContact } = useContact();
+  const { user } = useAuth();
+  const { submitting, sendContact, contacts, loadingContacts, contactsError, reloadContacts } = useContact();
 
   return (
     <div className="page container">
@@ -53,8 +56,34 @@ export default function ContactPage() {
           </div>
         </div>
 
-        <ContactForm submitting={submitting} onSubmit={sendContact} />
+        <ContactForm submitting={submitting} onSubmit={sendContact} user={user} />
       </div>
+
+      {user ? (
+        <section className="contact-history panel">
+          <h2 className="panel-title">Yêu cầu hỗ trợ của bạn</h2>
+          {loadingContacts ? <p className="muted">Đang tải lịch sử liên hệ...</p> : null}
+          {contactsError ? (
+            <div role="alert" className="contact-history__error">
+              <p>{contactsError}</p>
+              <button type="button" className="link" onClick={reloadContacts}>Thử lại</button>
+            </div>
+          ) : null}
+          {!loadingContacts && !contactsError && contacts.length === 0 ? (
+            <p className="muted">Bạn chưa gửi yêu cầu hỗ trợ nào.</p>
+          ) : null}
+          {!contactsError ? contacts.map((contact) => (
+            <article className="contact-history__item" key={contact.id}>
+              <div className="contact-history__head">
+                <strong>#{contact.id} · {contact.subject}</strong>
+                <span>{({ pending: 'Chờ xử lý', processing: 'Đang xử lý', responded: 'Đã phản hồi', completed: 'Đã hoàn thành' }[String(contact.status || '').toLowerCase()] || contact.status || 'Chờ xử lý')}</span>
+              </div>
+              <p>{contact.message}</p>
+              <small className="muted">Gửi lúc {formatDateTime(contact.createdAt)}</small>
+            </article>
+          )) : null}
+        </section>
+      ) : null}
     </div>
   );
 }

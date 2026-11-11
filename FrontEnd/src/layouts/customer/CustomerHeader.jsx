@@ -3,6 +3,7 @@ import { Link, NavLink, useNavigate } from 'react-router-dom';
 import {
   BookOpen,
   ChevronDown,
+  Heart,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -11,6 +12,7 @@ import {
   Search,
   ShoppingCart,
   Sun,
+  Ticket,
   User,
   X,
 } from 'lucide-react';
@@ -23,6 +25,7 @@ import { cn } from '@/shared/utils/cn';
 const NAV_LINKS = [
   { to: '/', label: 'Trang chủ', end: true },
   { to: '/books', label: 'Kho sách' },
+  { to: '/vouchers', label: 'Ưu đãi' },
   { to: '/orders', label: 'Đơn hàng', private: true },
   { to: '/contact', label: 'Liên hệ' },
 ];
@@ -113,6 +116,10 @@ export default function CustomerHeader() {
             {isDark ? <Sun size={19} /> : <Moon size={19} />}
           </button>
 
+          <Link to="/wishlist" className="icon-btn" aria-label="Sách yêu thích" title="Sách yêu thích">
+            <Heart size={19} />
+          </Link>
+
           <Link to="/cart" className="icon-btn icon-btn--cart" aria-label={`Giỏ hàng (${count})`}>
             <ShoppingCart size={19} />
             {count > 0 ? <span className="icon-btn__badge">{count > 99 ? '99+' : count}</span> : null}
@@ -145,6 +152,12 @@ export default function CustomerHeader() {
                   </Link>
                   <Link to="/orders" role="menuitem" onClick={() => setAccountOpen(false)}>
                     <Package size={16} /> Đơn hàng
+                  </Link>
+                  <Link to="/wishlist" role="menuitem" onClick={() => setAccountOpen(false)}>
+                    <Heart size={16} /> Sách yêu thích
+                  </Link>
+                  <Link to="/vouchers" role="menuitem" onClick={() => setAccountOpen(false)}>
+                    <Ticket size={16} /> Ưu đãi
                   </Link>
                   {isAdmin ? (
                     <Link to="/admin" role="menuitem" onClick={() => setAccountOpen(false)}>
@@ -203,6 +216,11 @@ export default function CustomerHeader() {
               {link.label}
             </NavLink>
           ))}
+          {user ? (
+            <NavLink to="/wishlist" onClick={() => setMenuOpen(false)} className="mobile-nav__link">
+              Sách yêu thích
+            </NavLink>
+          ) : null}
           <NavLink to="/profile" onClick={() => setMenuOpen(false)} className="mobile-nav__link">
             Tài khoản
           </NavLink>

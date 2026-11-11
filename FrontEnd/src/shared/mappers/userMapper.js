@@ -7,15 +7,16 @@ function pick(value, ...keys) {
 
 export function mapUserFromApi(dto) {
   if (!dto) return null;
+  const email = pick(dto, 'email') || '';
   return {
     id: pick(dto, 'id'),
-    username: pick(dto, 'username') || '',
-    email: pick(dto, 'email') || '',
+    username: pick(dto, 'username') || email,
+    email,
     fullName: pick(dto, 'fullName', 'full_name') || '',
     phone: pick(dto, 'phone') || '',
     address: pick(dto, 'address') || '',
-    role: pick(dto, 'role') || 'CUSTOMER',
-    status: pick(dto, 'status') || 'ACTIVE',
+    role: String(pick(dto, 'role') || 'CUSTOMER').toUpperCase(),
+    status: String(pick(dto, 'status') || 'ACTIVE').toUpperCase(),
     avatar: pick(dto, 'avatar') || '',
     createdAt: pick(dto, 'createdAt', 'created_at') || null,
   };
