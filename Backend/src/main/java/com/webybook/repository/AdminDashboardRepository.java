@@ -26,14 +26,14 @@ public class AdminDashboardRepository {
                   (SELECT COUNT(*) FROM users) total_users,
                   (SELECT COUNT(*) FROM users WHERE status = 'ACTIVE') active_users,
                   (SELECT COALESCE(SUM(total_amount), 0) FROM orders
-                   WHERE status NOT IN ('cancelled', 'canceled')) total_revenue,
-                  (SELECT COUNT(*) FROM orders WHERE status = 'pending') pending_orders,
+                   WHERE order_status NOT IN ('rejected', 'cancelled', 'canceled')) total_revenue,
+                  (SELECT COUNT(*) FROM orders WHERE order_status = 'pending') pending_orders,
                   (SELECT COUNT(*) FROM books WHERE status <> 'deleted' AND stock_quantity <= 5) low_stock_books
                 """, Map.of());
     }
 
     public List<Map<String, Object>> ordersByStatus() {
-        return jdbc.queryForList("SELECT status, COUNT(*) total FROM orders GROUP BY status ORDER BY status", Map.of());
+        return jdbc.queryForList("SELECT order_status status, COUNT(*) total FROM orders GROUP BY order_status ORDER BY order_status", Map.of());
     }
 
     public List<Map<String, Object>> topBooks() {
@@ -41,7 +41,7 @@ public class AdminDashboardRepository {
                 SELECT b.id, b.title, SUM(oi.quantity) quantity_sold
                 FROM order_items oi JOIN books b ON b.id=oi.book_id
                 JOIN orders o ON o.id=oi.order_id
-                WHERE o.status NOT IN ('cancelled', 'canceled')
+                WHERE o.order_status NOT IN ('rejected', 'cancelled', 'canceled')
                 GROUP BY b.id, b.title ORDER BY quantity_sold DESC LIMIT 10
                 """, Map.of());
     }
@@ -59,7 +59,7 @@ public class AdminDashboardRepository {
                 SELECT DATE(created_at) revenue_date, COALESCE(SUM(total_amount), 0) revenue,
                        COUNT(*) order_count
                 FROM orders
-                WHERE status NOT IN ('cancelled', 'canceled')
+                WHERE order_status NOT IN ('rejected', 'cancelled', 'canceled')
                 GROUP BY DATE(created_at)
                 ORDER BY revenue_date
                 """, from, to), dateParams(from, to));
@@ -71,7 +71,7 @@ public class AdminDashboardRepository {
                        COALESCE(SUM(total_amount), 0) revenue,
                        COUNT(*) order_count
                 FROM orders
-                WHERE status NOT IN ('cancelled', 'canceled')
+                WHERE order_status NOT IN ('rejected', 'cancelled', 'canceled')
                 GROUP BY DATE_SUB(DATE(created_at), INTERVAL WEEKDAY(created_at) DAY)
                 ORDER BY week_start
                 """, from, to), dateParams(from, to));

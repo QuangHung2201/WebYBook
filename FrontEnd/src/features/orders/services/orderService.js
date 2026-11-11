@@ -6,4 +6,6 @@ export const orderService = {
   createOrder: (data) => orderRepository.createOrder(data),
   updateStatus: (id, status) => orderRepository.updateStatus(id, status),
   cancelOrder: (id, userId = null) => orderRepository.cancelOrder(id, userId),
+  confirmPayment: (id) => orderRepository.confirmPayment(id),
+  createVnpayUrl: (id) => orderRepository.createVnpayUrl(id),
 };

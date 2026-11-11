@@ -21,6 +21,7 @@ public class CustomerCommerceService {
     public List<Map<String, Object>> voucherCatalog(Long userId) { return repository.voucherCatalog(userId); }
     public Map<String, Object> validateVoucher(String code, BigDecimal subtotal) { return repository.validateVoucher(code, subtotal); }
     public Map<String, Object> createOrder(long id, CreateOrderRequest request) { return repository.createOrder(id, request); }
+    public Map<String, Object> paymentOrder(long order, long user) { return repository.paymentOrder(order, user); }
     public Map<String, Object> orders(long id, String status, int page, int pageSize) { return repository.orders(id, status, page, pageSize); }
     public Map<String, Object> order(long order, long user) { return repository.order(order, user); }
     public void cancelOrder(long order, long user) { repository.cancelOrder(order, user); }

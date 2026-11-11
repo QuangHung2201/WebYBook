@@ -39,7 +39,7 @@ public class StoreBookRepository {
                 FROM order_items oi
                 JOIN orders o ON o.id = oi.order_id
                 WHERE oi.book_id = b.id
-                  AND o.status IN ('confirmed', 'processing', 'shipping', 'delivered')
+                  AND o.order_status = 'delivered'
             ), 0) sold,
             bp.table_of_contents tableOfContents,
             bp.preview_content previewContent,

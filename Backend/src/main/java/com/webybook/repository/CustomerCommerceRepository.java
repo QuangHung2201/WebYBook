@@ -41,6 +41,27 @@ public class CustomerCommerceRepository {
         ensureContactColumn("status", "VARCHAR(20) NOT NULL DEFAULT 'pending'");
     }
 
+    private void ensureOrderPaymentColumns() {
+        ensureColumn("orders", "order_status", "VARCHAR(20) NOT NULL DEFAULT 'pending'");
+        ensureColumn("orders", "payment_status", "VARCHAR(20) NOT NULL DEFAULT 'unpaid'");
+        jdbc.getJdbcOperations().execute("""
+                UPDATE orders SET order_status = COALESCE(NULLIF(order_status, ''), status, 'pending'),
+                    payment_status = CASE
+                        WHEN EXISTS (SELECT 1 FROM payments p WHERE p.order_id = orders.id AND p.payment_status = 'paid')
+                        THEN 'paid' ELSE COALESCE(NULLIF(payment_status, ''), 'unpaid') END
+                """);
+    }
+
+    private void ensureColumn(String table, String column, String definition) {
+        Integer count = jdbc.queryForObject("""
+                SELECT COUNT(*) FROM information_schema.columns
+                WHERE UPPER(table_name)=UPPER(:tableName) AND UPPER(column_name)=UPPER(:columnName)
+                """, new MapSqlParameterSource().addValue("tableName", table).addValue("columnName", column), Integer.class);
+        if (count != null && count == 0) {
+            jdbc.getJdbcOperations().execute("ALTER TABLE " + table + " ADD COLUMN " + column + " " + definition);
+        }
+    }
+
     public Map<String, Object> cart(long userId) {
         List<Map<String, Object>> items = jdbc.queryForList("""
                 SELECT ci.book_id bookId, ci.quantity qty, b.title, b.cover_image coverImage,
@@ -173,6 +194,7 @@ public class CustomerCommerceRepository {
 
     @Transactional
     public Map<String, Object> createOrder(long userId, CreateOrderRequest request) {
+        ensureOrderPaymentColumns();
         BigDecimal subtotal = BigDecimal.ZERO;
         for (CreateOrderRequest.Item item : request.items()) {
             Map<String, Object> book = jdbc.queryForMap("SELECT price, stock_quantity FROM books WHERE id=:id AND status='active'",
@@ -205,6 +227,11 @@ public class CustomerCommerceRepository {
         }
         Long shippingId = shippingIds.get(0);
         BigDecimal total = subtotal.add(shipping).subtract(discount).max(BigDecimal.ZERO);
+        String paymentMethod = request.paymentMethod() == null || request.paymentMethod().isBlank()
+                ? "COD" : request.paymentMethod().trim().toUpperCase();
+        if (!"COD".equals(paymentMethod) && !"VNPAY".equals(paymentMethod)) {
+            throw new BadRequestException("Phương thức thanh toán không được hỗ trợ");
+        }
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", userId).addValue("shippingId", shippingId).addValue("voucherId", voucherId)
                 .addValue("name", request.customerName()).addValue("phone", request.phone())
@@ -213,10 +240,17 @@ public class CustomerCommerceRepository {
         jdbc.update("""
                 INSERT INTO orders(user_id,shipping_method_id,voucher_id,recipient_name,recipient_phone,
                 shipping_address,shipping_ward,shipping_district,shipping_city,subtotal,discount_amount,
-                shipping_fee,total_amount,status) VALUES (:userId,:shippingId,:voucherId,:name,:phone,
-                :address,'','','',:subtotal,:discount,:shipping,:total,'pending')
+                shipping_fee,total_amount,status,order_status,payment_status) VALUES (:userId,:shippingId,:voucherId,:name,:phone,
+                :address,'','','',:subtotal,:discount,:shipping,:total,'pending','pending','unpaid')
                 """, params);
         Long orderId = jdbc.getJdbcOperations().queryForObject("SELECT LAST_INSERT_ID()", Long.class);
+        jdbc.update("""
+                INSERT INTO payments(order_id,payment_method,amount,payment_status)
+                VALUES (:orderId,:paymentMethod,:amount,'pending')
+                """, new MapSqlParameterSource()
+                .addValue("orderId", orderId)
+                .addValue("paymentMethod", paymentMethod)
+                .addValue("amount", total));
         for (CreateOrderRequest.Item item : request.items()) {
             Map<String, Object> book = jdbc.queryForMap("SELECT price FROM books WHERE id=:id",
                     new MapSqlParameterSource("id", item.bookId()));
@@ -234,26 +268,27 @@ public class CustomerCommerceRepository {
     }
 
     public Map<String, Object> orders(long userId, String status, int page, int pageSize) {
+        ensureOrderPaymentColumns();
         MapSqlParameterSource queryParams = new MapSqlParameterSource().addValue("userId", userId)
                 .addValue("status", status == null ? "" : status.toLowerCase());
         Integer count = jdbc.queryForObject("""
                 SELECT COUNT(*) FROM orders o
-                WHERE o.user_id=:userId AND (:status='' OR o.status=:status)
+                WHERE o.user_id=:userId AND (:status='' OR o.order_status=:status)
                 """, queryParams, Integer.class);
         int total = count == null ? 0 : count;
         int offset = (page - 1) * pageSize;
         List<Map<String, Object>> rows = jdbc.queryForList("""
                 SELECT o.id, o.user_id userId, o.recipient_name customerName, o.recipient_phone phone,
                        o.shipping_address address, o.subtotal, o.discount_amount discount,
-                       o.shipping_fee shippingFee, o.total_amount total, o.status,
+                       o.shipping_fee shippingFee, o.total_amount total, o.order_status status,
+                       o.order_status orderStatus, o.payment_status paymentStatus,
                        o.created_at createdAt, o.updated_at updatedAt, v.code voucherCode,
                        (SELECT p.payment_method FROM payments p WHERE p.order_id=o.id ORDER BY p.id DESC LIMIT 1) paymentMethod,
-                       (SELECT p.payment_status FROM payments p WHERE p.order_id=o.id ORDER BY p.id DESC LIMIT 1) paymentStatus,
                        sm.name shippingMethod
                 FROM orders o
                 LEFT JOIN vouchers v ON v.id = o.voucher_id
                 LEFT JOIN shipping_methods sm ON sm.id=o.shipping_method_id
-                WHERE o.user_id=:userId AND (:status='' OR o.status=:status)
+                WHERE o.user_id=:userId AND (:status='' OR o.order_status=:status)
                 ORDER BY o.created_at DESC
                 LIMIT :limit OFFSET :offset
                 """, queryParams.addValue("limit", pageSize).addValue("offset", offset));
@@ -263,15 +298,16 @@ public class CustomerCommerceRepository {
     }
 
     public Map<String, Object> order(long id, long userId) {
+        ensureOrderPaymentColumns();
         Map<String, Object> result;
         try {
             result = jdbc.queryForMap("""
                 SELECT o.id, o.user_id userId, o.recipient_name customerName, o.recipient_phone phone,
                        o.shipping_address address, o.subtotal, o.discount_amount discount,
-                       o.shipping_fee shippingFee, o.total_amount total, o.status,
+                       o.shipping_fee shippingFee, o.total_amount total, o.order_status status,
+                       o.order_status orderStatus, o.payment_status paymentStatus,
                        o.created_at createdAt, o.updated_at updatedAt, v.code voucherCode,
                        (SELECT p.payment_method FROM payments p WHERE p.order_id=o.id ORDER BY p.id DESC LIMIT 1) paymentMethod,
-                       (SELECT p.payment_status FROM payments p WHERE p.order_id=o.id ORDER BY p.id DESC LIMIT 1) paymentStatus,
                        sm.name shippingMethod
                 FROM orders o
                 LEFT JOIN vouchers v ON v.id = o.voucher_id
@@ -299,17 +335,54 @@ public class CustomerCommerceRepository {
         return result;
     }
 
+    public Map<String, Object> paymentOrder(long orderId, long userId) {
+        return jdbc.queryForMap("""
+                SELECT o.id, o.user_id userId, o.total_amount total, o.order_status orderStatus,
+                       o.payment_status paymentStatus, p.payment_method paymentMethod,
+                       p.payment_status paymentAttemptStatus
+                FROM orders o JOIN payments p ON p.order_id=o.id
+                WHERE o.id=:orderId AND o.user_id=:userId
+                ORDER BY p.id DESC LIMIT 1
+                """, new MapSqlParameterSource().addValue("orderId", orderId).addValue("userId", userId));
+    }
+
+    @Transactional
+    public void markVnpayPaid(long orderId, String transactionCode) {
+        int updated = jdbc.update("""
+                UPDATE payments p JOIN orders o ON o.id=p.order_id
+                SET p.payment_status='paid', p.transaction_code=:transactionCode, p.paid_at=NOW(),
+                    o.payment_status='paid'
+                WHERE o.id=:orderId AND p.payment_method='VNPAY'
+                  AND p.payment_status='pending'
+                """, new MapSqlParameterSource().addValue("orderId", orderId)
+                .addValue("transactionCode", transactionCode));
+        if (updated != 2) {
+            throw new BadRequestException("Giao dịch VNPay không hợp lệ hoặc đã được xử lý");
+        }
+    }
+
+    @Transactional
+    public void markVnpayFailed(long orderId) {
+        jdbc.update("""
+                UPDATE payments p JOIN orders o ON o.id=p.order_id
+                SET p.payment_status='failed'
+                WHERE o.id=:orderId AND p.payment_method='VNPAY'
+                  AND p.payment_status='pending'
+                """, new MapSqlParameterSource("orderId", orderId));
+    }
+
     @Transactional
     public void cancelOrder(long id, long userId) {
+        ensureOrderPaymentColumns();
         Map<String, Object> current;
         try {
             current = jdbc.queryForMap("""
-                    SELECT status FROM orders WHERE id=:id AND user_id=:userId
+                    SELECT order_status FROM orders WHERE id=:id AND user_id=:userId
                     """, new MapSqlParameterSource().addValue("id", id).addValue("userId", userId));
         } catch (EmptyResultDataAccessException exception) {
             throw new BadRequestException("Đơn hàng không thể hủy");
         }
-        String oldStatus = String.valueOf(current.get("status"));
+        String oldStatus = String.valueOf(current.get("order_status"));
         if (!"pending".equals(oldStatus) && !"confirmed".equals(oldStatus)) {
             throw new BadRequestException("Đơn hàng không thể hủy");
         }
@@ -321,18 +394,35 @@ public class CustomerCommerceRepository {
             throw new BadRequestException("Đơn hàng đã thanh toán trực tuyến; vui lòng liên hệ hỗ trợ để xử lý hủy và hoàn tiền");
         }
         int updated = jdbc.update("""
-                UPDATE orders SET status='cancelled'
-                WHERE id=:id AND user_id=:userId AND status=:oldStatus
+                UPDATE orders SET status='cancelled', order_status='cancelled'
+                WHERE id=:id AND user_id=:userId AND order_status=:oldStatus
                 """, new MapSqlParameterSource().addValue("id", id).addValue("userId", userId)
                 .addValue("oldStatus", oldStatus));
         if (updated == 0) {
             throw new BadRequestException("Đơn hàng không thể hủy");
         }
+        restoreStock(id);
         jdbc.update("""
                 INSERT INTO order_status_history(order_id, old_status, new_status, changed_by, note)
                 VALUES (:id, :oldStatus, 'cancelled', :userId, 'Khách hàng hủy đơn')
                 """, new MapSqlParameterSource().addValue("id", id).addValue("oldStatus", oldStatus)
                 .addValue("userId", userId));
+    }
+
+    private void restoreStock(long orderId) {
+        List<Map<String, Object>> items = jdbc.queryForList("""
+                SELECT book_id bookId, quantity
+                FROM order_items
+                WHERE order_id=:orderId
+                """, new MapSqlParameterSource("orderId", orderId));
+        for (Map<String, Object> item : items) {
+            jdbc.update("""
+                    UPDATE books SET stock_quantity=stock_quantity+:quantity
+                    WHERE id=:bookId
+                    """, new MapSqlParameterSource()
+                    .addValue("quantity", item.get("quantity"))
+                    .addValue("bookId", item.get("bookId")));
+        }
     }
 
     private void attachItems(List<Map<String, Object>> orders) {
@@ -387,7 +477,7 @@ public class CustomerCommerceRepository {
         List<Long> orderIds = jdbc.query("""
                 SELECT o.id FROM orders o
                 JOIN order_items oi ON oi.order_id=o.id
-                WHERE o.user_id=:userId AND oi.book_id=:bookId AND o.status='delivered'
+                WHERE o.user_id=:userId AND oi.book_id=:bookId AND o.order_status='delivered'
                 ORDER BY o.id DESC LIMIT 1
                 """, new MapSqlParameterSource().addValue("userId", userId)
                 .addValue("bookId", bookId), (rs, row) -> rs.getLong(1));

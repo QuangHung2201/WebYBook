@@ -11,6 +11,7 @@ import ContactPage from '@/features/contact/pages/ContactPage';
 import WishlistPage from '@/features/wishlist/pages/WishlistPage';
 import VoucherListPage from '@/features/vouchers/pages/VoucherListPage';
 import NotFoundPage from '@/app/pages/NotFoundPage';
+import PaymentResultPage from '@/features/checkout/pages/PaymentResultPage';
 import ProtectedRoute from './ProtectedRoute';
 
 export const customerRoutes = [
@@ -23,6 +24,7 @@ export const customerRoutes = [
       { path: 'cart', element: <CartPage /> },
       { path: 'contact', element: <ContactPage /> },
       { path: 'vouchers', element: <VoucherListPage /> },
+      { path: 'payment/vnpay-return', element: <PaymentResultPage /> },
       {
         element: <ProtectedRoute />,
         children: [

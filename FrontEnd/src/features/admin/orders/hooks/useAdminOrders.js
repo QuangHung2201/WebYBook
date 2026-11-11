@@ -63,6 +63,24 @@ export function useAdminOrders() {
     [refresh, toast],
   );
 
+  const confirmPayment = useCallback(
+    async (id) => {
+      setSaving(true);
+      try {
+        await orderService.confirmPayment(id);
+        toast.success('Đã xác nhận thu tiền COD.');
+        refresh();
+        return true;
+      } catch (err) {
+        toast.error(err.message || 'Không thể xác nhận thanh toán.');
+        return false;
+      } finally {
+        setSaving(false);
+      }
+    },
+    [refresh, toast],
+  );
+
   return {
     orders: data.items,
     total: data.total,
@@ -76,5 +94,6 @@ export function useAdminOrders() {
     setPage,
     refresh,
     updateStatus,
+    confirmPayment,
   };
 }

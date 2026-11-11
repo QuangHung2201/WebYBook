@@ -48,6 +48,10 @@ export const checkoutService = {
     };
 
     const order = await orderService.createOrder(payload);
+    if (paymentMethod === 'VNPAY') {
+      const paymentUrl = await orderService.createVnpayUrl(order.id);
+      window.location.assign(paymentUrl);
+    }
 
     // Mock backend: adjust stock locally. The API repository is a no-op here
     // because the Spring Boot order service owns stock updates.

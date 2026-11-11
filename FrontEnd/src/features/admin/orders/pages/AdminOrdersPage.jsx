@@ -31,6 +31,7 @@ export default function AdminOrdersPage() {
     setPage,
     refresh,
     updateStatus,
+    confirmPayment,
   } = useAdminOrders();
 
   const [keyword, setKeyword] = useState('');
@@ -148,6 +149,7 @@ export default function AdminOrdersPage() {
         saving={saving}
         onClose={() => setSelected(null)}
         onUpdateStatus={updateStatus}
+        onConfirmPayment={confirmPayment}
       />
     </div>
   );

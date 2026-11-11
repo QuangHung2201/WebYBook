@@ -16,13 +16,9 @@ import java.util.Set;
 public class AdminOrderService {
 
     private static final Map<String, Set<String>> TRANSITIONS = Map.of(
-            "pending", Set.of("confirmed", "cancelled"),
-            "confirmed", Set.of("processing", "cancelled"),
-            "processing", Set.of("shipping", "cancelled"),
-            "shipping", Set.of("delivered"),
-            "delivered", Set.of("returned"),
-            "returned", Set.of(),
-            "cancelled", Set.of()
+            "pending", Set.of("delivered", "rejected"),
+            "delivered", Set.of(),
+            "rejected", Set.of()
     );
 
     private final AdminOrderRepository repository;
@@ -58,6 +54,15 @@ public class AdminOrderService {
         }
         repository.updateStatus(id, oldStatus, newStatus, request.note(), changedBy);
         return detail(id);
+    }
+
+    @Transactional
+    public Map<String, Object> confirmCodPayment(long id) {
+        Map<String, Object> order = detail(id);
+        if (!"COD".equalsIgnoreCase(String.valueOf(order.get("paymentMethod")))) {
+            throw new BadRequestException("Chỉ đơn COD mới có thể xác nhận thu tiền");
+        }
+        return repository.confirmCodPayment(id);
     }
 
     @Transactional(readOnly = true)

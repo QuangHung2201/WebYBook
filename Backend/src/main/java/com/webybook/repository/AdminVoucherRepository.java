@@ -20,7 +20,9 @@ public class AdminVoucherRepository {
     public List<Map<String, Object>> list(String search, String status) {
         return jdbc.queryForList("""
                 SELECT * FROM vouchers
-                WHERE (:search='' OR LOWER(code) LIKE LOWER(:likeSearch))
+                WHERE (:search='' OR LOWER(code) LIKE LOWER(:likeSearch)
+                    OR LOWER(name) LIKE LOWER(:likeSearch)
+                    OR LOWER(COALESCE(description, '')) LIKE LOWER(:likeSearch))
                   AND (:status='' OR status=:status)
                 ORDER BY created_at DESC LIMIT 500
                 """, new MapSqlParameterSource().addValue("search", search == null ? "" : search.trim())

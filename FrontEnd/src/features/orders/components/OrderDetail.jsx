@@ -120,6 +120,11 @@ export default function OrderDetail({ order, onCancel }) {
               </div>
               <span className="order-line__qty">x{item.qty}</span>
               <strong className="order-line__total">{formatCurrency(item.price * item.qty)}</strong>
+              {order.status === 'DELIVERED' ? (
+                <Link to={`/books/${item.bookId}#reviews`} className="btn btn--outline btn--sm">
+                  Đánh giá sách
+                </Link>
+              ) : null}
             </div>
           ))}
         </div>

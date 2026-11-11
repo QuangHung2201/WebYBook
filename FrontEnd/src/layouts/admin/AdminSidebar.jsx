@@ -10,6 +10,7 @@ import {
   PenTool,
   Store,
   Users,
+  MessageSquareText,
   X,
 } from 'lucide-react';
 import { cn } from '@/shared/utils/cn';
@@ -41,6 +42,7 @@ export const ADMIN_NAV_GROUPS = [
     items: [
       { to: '/admin/users', label: 'Người dùng', icon: Users },
       { to: '/admin/reports', label: 'Báo cáo', icon: BarChart3 },
+      { to: '/admin/reviews', label: 'Đánh giá', icon: MessageSquareText },
     ],
   },
 ];

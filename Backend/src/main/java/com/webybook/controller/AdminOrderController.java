@@ -40,6 +40,11 @@ public class AdminOrderController {
                 service.updateStatus(id, request, currentUserId(authentication)));
     }
 
+    @PutMapping("/{id}/payment/confirm")
+    public ApiResponse<Map<String, Object>> confirmPayment(@PathVariable long id) {
+        return ApiResponse.success("Đã xác nhận thu tiền COD", service.confirmCodPayment(id));
+    }
+
     @GetMapping("/{id}/history")
     public ApiResponse<List<Map<String, Object>>> history(@PathVariable long id) {
         return ApiResponse.success("Lấy lịch sử đơn hàng thành công", service.history(id));

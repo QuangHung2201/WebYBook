@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { BadgePercent, Copy, Ticket } from 'lucide-react';
 import Loading from '@/components/common/Loading/Loading';
 import ErrorState from '@/components/common/ErrorState/ErrorState';
@@ -9,6 +10,8 @@ import { formatCurrency } from '@/shared/utils/formatCurrency';
 import { formatDate } from '@/shared/utils/formatDate';
 import { VOUCHER_TYPE } from '@/data/constants/voucherStatus';
 import { useAvailableVouchers } from '../hooks/useAvailableVouchers';
+import SearchInput from '@/components/common/SearchInput/SearchInput';
+import { normalizeKeyword } from '@/shared/utils/validators';
 import './Vouchers.css';
 
 function discountLabel(voucher) {
@@ -21,6 +24,16 @@ function discountLabel(voucher) {
 export default function VoucherListPage() {
   const { vouchers, loading, error, reload } = useAvailableVouchers('', true);
   const toast = useToast();
+  const [keyword, setKeyword] = useState('');
+  const filteredVouchers = useMemo(() => {
+    const needle = normalizeKeyword(keyword);
+    if (!needle) return vouchers;
+    return vouchers.filter((voucher) =>
+      [voucher.code, voucher.name, voucher.description]
+        .map(normalizeKeyword)
+        .some((value) => value.includes(needle)),
+    );
+  }, [keyword, vouchers]);
 
   const copyCode = async (code) => {
     try {
@@ -37,10 +50,18 @@ export default function VoucherListPage() {
         <div>
           <h1>Ưu đãi &amp; voucher</h1>
           <p>
-            {vouchers.length > 0
-              ? `Có ${vouchers.length} voucher trong hệ thống.`
+            {filteredVouchers.length > 0
+              ? `Có ${filteredVouchers.length} voucher phù hợp.`
               : 'Hiện chưa có voucher trong hệ thống.'}
           </p>
+        </div>
+        <div className="catalog-toolbar__search">
+          <SearchInput
+            value={keyword}
+            onChange={setKeyword}
+            placeholder="Tìm theo mã, tên hoặc mô tả voucher..."
+            ariaLabel="Tìm kiếm voucher"
+          />
         </div>
       </div>
 
@@ -48,7 +69,7 @@ export default function VoucherListPage() {
         <Loading label="Đang tải voucher..." />
       ) : error ? (
         <ErrorState message={error} onRetry={reload} />
-      ) : vouchers.length === 0 ? (
+      ) : filteredVouchers.length === 0 ? (
         <EmptyState
           icon={Ticket}
           title="Chưa có voucher"
@@ -61,7 +82,7 @@ export default function VoucherListPage() {
         />
       ) : (
         <div className="voucher-grid">
-          {vouchers.map((voucher) => (
+          {filteredVouchers.map((voucher) => (
             <article key={voucher.id} className="voucher-card">
               <div className="voucher-card__value">
                 <BadgePercent size={22} />

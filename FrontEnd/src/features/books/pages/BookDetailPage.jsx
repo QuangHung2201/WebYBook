@@ -214,7 +214,7 @@ export default function BookDetailPage() {
             ) : null}
           </div>
         ) : (
-          <div>
+          <div id="reviews">
             <h3 className="book-detail__reviews-title">Đánh giá từ độc giả</h3>
             <div className="review-summary" aria-label="Tổng hợp đánh giá">
               <strong>{Number(book.rating || 0).toFixed(1)} / 5</strong>

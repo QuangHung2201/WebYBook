@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react';
+import { CheckCircle } from 'lucide-react';
 import Modal from '@/components/common/Modal/Modal';
 import Button from '@/components/common/Button/Button';
-import { Select } from '@/components/common/Input/Input';
 import BookCover from '@/components/shared/BookCover/BookCover';
 import { formatCurrency } from '@/shared/utils/formatCurrency';
 import { formatDateTime } from '@/shared/utils/formatDate';
-import { ORDER_STATUS, ORDER_STATUS_OPTIONS } from '@/data/constants/orderStatus';
+import { ORDER_STATUS } from '@/data/constants/orderStatus';
 import { PAYMENT_METHOD_LABELS } from '@/data/constants/paymentMethods';
 import { SHIPPING_METHODS_LIST } from '@/data/constants/shippingMethods';
 
@@ -13,18 +12,12 @@ function shippingLabel(method) {
   return SHIPPING_METHODS_LIST.find((item) => item.value === method)?.label || method;
 }
 
-export default function AdminOrderDetailModal({ open, order, saving, onClose, onUpdateStatus }) {
-  const [nextStatus, setNextStatus] = useState(order?.status || ORDER_STATUS.PENDING);
-
-  useEffect(() => {
-    if (open) setNextStatus(order?.status || ORDER_STATUS.PENDING);
-  }, [open, order]);
-
+export default function AdminOrderDetailModal({ open, order, saving, onClose, onUpdateStatus, onConfirmPayment }) {
   if (!order) return null;
 
-  const submit = async () => {
-    const ok = await onUpdateStatus(order.id, nextStatus);
-    if (ok) onClose();
+  const runAction = async (action) => {
+    const success = await action();
+    if (success) onClose();
   };
 
   return (
@@ -38,13 +31,21 @@ export default function AdminOrderDetailModal({ open, order, saving, onClose, on
           <Button variant="ghost" onClick={onClose} disabled={saving}>
             Đóng
           </Button>
-          <Button
-            onClick={submit}
-            loading={saving}
-            disabled={nextStatus === order.status}
-          >
-            Cập nhật trạng thái
-          </Button>
+          {order.status === ORDER_STATUS.PENDING ? (
+            <>
+              <Button onClick={() => runAction(() => onUpdateStatus(order.id, 'delivered'))} loading={saving}>
+                Duyệt đơn
+              </Button>
+              <Button variant="danger" onClick={() => runAction(() => onUpdateStatus(order.id, 'rejected'))} loading={saving}>
+                Từ chối
+              </Button>
+            </>
+          ) : null}
+          {order.paymentMethod === 'COD' && order.status === ORDER_STATUS.DELIVERED && order.paymentStatus !== 'PAID' ? (
+            <Button icon={CheckCircle} onClick={() => runAction(() => onConfirmPayment(order.id))} loading={saving}>
+              Xác nhận đã thu tiền
+            </Button>
+          ) : null}
         </>
       }
     >
@@ -69,6 +70,10 @@ export default function AdminOrderDetailModal({ open, order, saving, onClose, on
           <div>
             <span>Thanh toán</span>
             <strong>{PAYMENT_METHOD_LABELS[order.paymentMethod] || order.paymentMethod}</strong>
+          </div>
+          <div>
+            <span>Trạng thái thanh toán</span>
+            <strong>{order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}</strong>
           </div>
           <div>
             <span>Vận chuyển</span>
@@ -120,13 +125,6 @@ export default function AdminOrderDetailModal({ open, order, saving, onClose, on
           </div>
         </div>
 
-        <Select
-          label="Trạng thái đơn hàng"
-          value={nextStatus}
-          onChange={(event) => setNextStatus(event.target.value)}
-          options={ORDER_STATUS_OPTIONS}
-          hint="Đơn đã hủy vẫn có thể được mở lại bằng cách đổi sang trạng thái khác."
-        />
       </div>
     </Modal>
   );

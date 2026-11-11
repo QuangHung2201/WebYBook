@@ -59,6 +59,19 @@ export const apiOrderRepository = {
     return mapOrderFromApi(payload?.data ?? payload);
   },
 
+  async confirmPayment(id) {
+    const payload = await request({
+      url: API_ENDPOINTS.admin.orders.confirmPayment(id),
+      method: 'PUT',
+    });
+    return mapOrderFromApi(payload?.data ?? payload);
+  },
+
+  async createVnpayUrl(id) {
+    const payload = await request({ url: API_ENDPOINTS.orders.vnpayUrl(id) });
+    return payload?.data ?? payload;
+  },
+
   async cancelOrder(id) {
     const payload = await request({
       url: API_ENDPOINTS.orders.cancel(id),

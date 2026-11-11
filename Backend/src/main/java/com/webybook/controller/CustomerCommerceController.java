@@ -10,11 +10,19 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.*;
 import java.math.BigDecimal;
 import java.util.Map;
+import jakarta.servlet.http.HttpServletRequest;
+import com.webybook.service.VnpayService;
+import org.springframework.http.ResponseEntity;
+import java.net.URI;
 
 @RestController
 public class CustomerCommerceController {
     private final CustomerCommerceService service;
-    public CustomerCommerceController(CustomerCommerceService service) { this.service = service; }
+    private final VnpayService vnpayService;
+    public CustomerCommerceController(CustomerCommerceService service, VnpayService vnpayService) {
+        this.service = service;
+        this.vnpayService = vnpayService;
+    }
 
     @GetMapping("/api/v1/cart")
     public ApiResponse<?> cart(Authentication a) { return ApiResponse.success("Lấy giỏ hàng thành công", service.cart(uid(a))); }
@@ -34,6 +42,20 @@ public class CustomerCommerceController {
 
     @PostMapping("/api/v1/orders")
     public ApiResponse<?> createOrder(Authentication a, @Valid @RequestBody CreateOrderRequest r) { return ApiResponse.success("Đặt hàng thành công", service.createOrder(uid(a), r)); }
+    @GetMapping("/api/v1/orders/{id}/vnpay-url")
+    public ApiResponse<String> vnpayUrl(Authentication a, @PathVariable long id, HttpServletRequest request) {
+        return ApiResponse.success("Tạo liên kết thanh toán VNPay thành công",
+                vnpayService.createPaymentUrl(id, uid(a), request));
+    }
+    @GetMapping("/api/v1/payments/vnpay-return")
+    public ResponseEntity<Void> vnpayReturn(@RequestParam Map<String, String> params) {
+        boolean paid = vnpayService.handleCallback(params);
+        String orderId = params.getOrDefault("vnp_TxnRef", "");
+        return ResponseEntity.status(302)
+                .location(URI.create("http://localhost:5173/payment/vnpay-return?status="
+                        + (paid ? "PAID" : "FAILED") + "&orderId=" + orderId))
+                .build();
+    }
     @GetMapping("/api/v1/orders")
     public ApiResponse<?> orders(
             Authentication a,

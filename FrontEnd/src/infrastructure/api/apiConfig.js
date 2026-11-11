@@ -28,6 +28,7 @@ export const API_ENDPOINTS = {
       list: '/admin/orders',
       detail: (id) => `/admin/orders/${id}`,
       updateStatus: (id) => `/admin/orders/${id}/status`,
+        confirmPayment: (id) => `/admin/orders/${id}/payment/confirm`,
     },
     vouchers: {
       list: '/admin/vouchers',
@@ -83,6 +84,7 @@ export const API_ENDPOINTS = {
     create: '/orders',
     updateStatus: (id) => `/orders/${id}/status`,
     cancel: (id) => `/orders/${id}/cancel`,
+    vnpayUrl: (id) => `/orders/${id}/vnpay-url`,
   },
   users: {
     me: '/users/me',
@@ -110,6 +112,12 @@ export const API_ENDPOINTS = {
     create: (bookId) => `/books/${bookId}/reviews`,
     update: (id) => `/reviews/${id}`,
     remove: (id) => `/reviews/${id}`,
+  },
+  adminReviews: {
+    list: '/admin/reviews',
+    detail: (id) => `/admin/reviews/${id}`,
+    updateStatus: (id) => `/admin/reviews/${id}/status`,
+    remove: (id) => `/admin/reviews/${id}`,
   },
   contacts: {
     send: '/contacts',
