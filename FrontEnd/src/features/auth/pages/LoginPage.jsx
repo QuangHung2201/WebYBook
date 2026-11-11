@@ -17,10 +17,11 @@ export default function LoginPage() {
 
   if (user) return <Navigate to={redirectTo} replace />;
 
+  // xử lý submit
   const handleLogin = async (data) => {
     setSubmitting(true);
     try {
-      await login(data);
+      await login(data);  // được gọi từ AuthProvider để submit
       toast.success('Đăng nhập thành công. Chào mừng bạn trở lại!');
       navigate(redirectTo, { replace: true });
     } catch (error) {

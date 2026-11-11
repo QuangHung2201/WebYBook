@@ -13,11 +13,12 @@ export default function RegisterPage() {
   const [submitting, setSubmitting] = useState(false);
 
   if (user) return <Navigate to="/" replace />;
+// xử lý submit
 
   const handleRegister = async (data) => {
     setSubmitting(true);
     try {
-      await register(data);
+      await register(data); // được gọi từ AuthProvider với data để submit
       toast.success('Tạo tài khoản thành công. Chào mừng bạn đến với WebYBook!');
       navigate('/', { replace: true });
     } catch (error) {
